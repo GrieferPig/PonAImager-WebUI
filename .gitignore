@@ -1,0 +1,4 @@
+dist
+src/*.png
+node_modules
+frontend/node_modules
