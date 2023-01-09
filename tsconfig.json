@@ -4,6 +4,7 @@
         "frontend/**/*"
     ],
     "compilerOptions": {
+        "moduleResolution": "Node",
         "noImplicitAny": false,
         "outDir": "dist"
     },

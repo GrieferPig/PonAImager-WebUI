@@ -1,11 +1,17 @@
 import argparse
 import os
-from diffusers import StableDiffusionPipeline, DDIMScheduler, EulerDiscreteScheduler
+import diffusers
 from torch import autocast
 import torch
+import sys
 # get rid of the warnings
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+
+
+def println(str):
+    print(str)
+    sys.stdout.flush()
 
 
 parser = argparse.ArgumentParser(description="Generate poni pics.")
@@ -28,10 +34,12 @@ parser.add_argument("--outname", type=str,
 parser.add_argument("--listen",
                     help='listen to stdin for prompt, draw on line return', action="store_true")
 parser.add_argument('prompt', type=str, nargs='*',
-                    help='Prompts to generate image')
+                    help='Prompts to generate image, 77 token(word) limit')
+parser.add_argument('--negative', type=str, nargs='*', default="",
+                    help='Negative prompt: Will not be considered by AI while generating img, 77 token(word) limit')
 
 args = parser.parse_args()
-# print(args)
+# println(args)
 
 # thanks to the great and powerful great firewall
 # nvm i can just store the model locally
@@ -50,7 +58,7 @@ os.makedirs(tempPath, exist_ok=True)
 device = "cuda"
 
 if args.sampler == "DDIM":
-    sampler = DDIMScheduler(
+    sampler = diffusers.DDIMScheduler(
         beta_start=0.00085,
         beta_end=0.012,
         beta_schedule="scaled_linear",
@@ -59,13 +67,13 @@ if args.sampler == "DDIM":
         steps_offset=1,
     )
 elif args.sampler == "Euler":
-    sampler = EulerDiscreteScheduler(
+    sampler = diffusers.EulerDiscreteScheduler(
         beta_start=0.00085,
         beta_end=0.012,
         beta_schedule="scaled_linear",
     )
 
-pipe = StableDiffusionPipeline.from_pretrained(
+pipe = diffusers.StableDiffusionPipeline.from_pretrained(
     model_id,
     torch_dtype=torch.float16,
     revision="main",
@@ -78,19 +86,32 @@ pipe.safety_checker = lambda images, clip_input: (images, False)
 pipe = pipe.to(device)
 
 # pipp-sized gpu mem optim
+# disable if ur mem is average height (8GiB+)
 if args.noopt:
+    # pipe.enable_sequential_cpu_offload()
+    # pipe.enable_xformers_memory_efficient_attention()
     pipe.enable_attention_slicing()
+    # pipe.enable_vae_slicing()
+
+# since nodejs doesn't receive tqdm's output for some reason
+# probably because it's using unicode control chars to prevent
+# \r and \n being printed
+pipe.set_progress_bar_config(disable=True)
 
 
-def draw(v, scale, steps, height, width, filename):
+def drawCallback(step, timestep, latents):
+    println(step)
+
+
+def draw(v, scale, steps, height, width, filename, negative):
     with autocast("cuda"):
         if args.seed == -1:
             image = pipe(v, guidance_scale=scale, num_inference_steps=steps,
-                         height=height, width=width).images[0]
+                         height=height, width=width, negative_prompt=negative, callback=drawCallback).images[0]
         else:
             generator = torch.Generator(device="cuda").manual_seed(args.seed)
             image = pipe(v, generator=generator, guidance_scale=scale, num_inference_steps=steps,
-                         height=height, width=width).images[0]
+                         height=height, width=width, negative_prompt=negative, callback=drawCallback).images[0]
 
         if filename == "":
             image.save(os.path.join(tempPath, v+".png"))
@@ -103,13 +124,17 @@ def draw(v, scale, steps, height, width, filename):
 # my oc, informaly known as "Sawtooth Soundgoodizer"
 # v = "cool ((((solo)))) ((male)) (((pegasus))) with (white skin dark blue short mane cyan iris) wearing sunglasses looking at you smiling highly detailed portrait realistic illustration high resolution {profile pic} awesome {{Unreal Engine 8K}}"
 
-print("ready")
+println("ready")
 if args.listen:
     while True:
         args = parser.parse_args(input().split())
-        v = " ".join(args.prompt)
-        draw(v, args.scale, args.steps, args.height, args.width, args.outname)
-        print("ready")
+        prompt = " ".join(args.prompt)
+        neg = " ".join(args.negative)
+        draw(prompt, args.scale, args.steps,
+             args.height, args.width, args.outname, neg)
+        println("ready")
 else:
-    v = " ".join(args.prompt)
-    draw(v, args.scale, args.steps, args.height, args.width, args.outname)
+    prompt = " ".join(args.prompt)
+    neg = " ".join(args.negative)
+    draw(prompt, args.scale, args.steps,
+         args.height, args.width, args.outname, neg)
