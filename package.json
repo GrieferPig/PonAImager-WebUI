@@ -1,7 +1,7 @@
 {
-  "name": "backend",
+  "name": "ponaimager-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "A web UI for Stable Diffusion with a modern design similiar to stable-diffusion-ui",
   "main": "src/index.js",
   "scripts": {
     "frontend": "node scripts/buildFrontend.js",
