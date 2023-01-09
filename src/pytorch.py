@@ -9,7 +9,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 parser = argparse.ArgumentParser(description="Generate poni pics.")
-parser.add_argument("--scale", type=int,
+parser.add_argument("--scale", type=float,
                     help='scale, default to 7.5', default=7.5)
 parser.add_argument("--steps", type=int,
                     help='iteration steps, default to 40', default=40)
@@ -18,7 +18,7 @@ parser.add_argument("--height", type=int,
 parser.add_argument("--width", type=int,
                     help='image width, must be multiples of 32, default to 512', default=512)
 parser.add_argument("--sampler", type=str,
-                    help='sampler, default to ddim', choices=["ddim", "euler"], default="ddim")
+                    help='sampler, default to DDIM', choices=["DDIM", "Euler"], default="DDIM")
 parser.add_argument("--seed", type=int,
                     help='Specify a seed for generation', default=-1)
 parser.add_argument("--noopt",
@@ -49,7 +49,7 @@ tempPath = os.path.join(rootPath, "temp")
 os.makedirs(tempPath, exist_ok=True)
 device = "cuda"
 
-if args.sampler == "ddim":
+if args.sampler == "DDIM":
     sampler = DDIMScheduler(
         beta_start=0.00085,
         beta_end=0.012,
@@ -58,7 +58,7 @@ if args.sampler == "ddim":
         set_alpha_to_one=False,
         steps_offset=1,
     )
-elif args.sampler == "euler":
+elif args.sampler == "Euler":
     sampler = EulerDiscreteScheduler(
         beta_start=0.00085,
         beta_end=0.012,
@@ -109,6 +109,7 @@ if args.listen:
         args = parser.parse_args(input().split())
         v = " ".join(args.prompt)
         draw(v, args.scale, args.steps, args.height, args.width, args.outname)
+        print("ready")
 else:
     v = " ".join(args.prompt)
     draw(v, args.scale, args.steps, args.height, args.width, args.outname)

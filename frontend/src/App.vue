@@ -1,11 +1,19 @@
 <template>
   <v-app>
     <v-main>
-      <HelloWorld />
     </v-main>
   </v-app>
 </template>
 
-<script setup lang="ts">
-  import HelloWorld from '@/components/HelloWorld.vue'
+<script lang="ts">
+  import axios from 'axios'
+
+  export default {
+    mounted(){
+      axios.post("/api", "hi").then((res) => {
+        console.log(res)
+      })
+      console.log("post")
+    }
+  }
 </script>
