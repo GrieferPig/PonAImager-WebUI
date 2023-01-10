@@ -6,14 +6,20 @@
 </template>
 
 <script lang="ts">
-  import axios from 'axios'
+import axios from 'axios'
 
-  export default {
-    mounted(){
-      axios.post("/api", "hi").then((res) => {
-        console.log(res)
-      })
-      console.log("post")
-    }
+export default {
+  mounted() {
+    axios.post("/api", {
+      firstName: 'Fred',
+      lastName: 'Flintstone'
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then((res) => {
+      console.log(res)
+    })
   }
+}
 </script>

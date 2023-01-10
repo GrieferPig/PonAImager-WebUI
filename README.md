@@ -9,7 +9,6 @@ im not going serious on this proj i use this proj to get hands on express framew
 
 - https://pytorch.org/get-started/locally/ (u need 3.7-3.9 on win)
 - pip install transformers diffusers accelerate ninja
-- git config --global core.longpaths true
 - pip install -v -U git+https://github.com/facebookresearch/xformers.git@main#egg=xformers
 
 ## Args

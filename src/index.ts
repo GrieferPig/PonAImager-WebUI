@@ -7,14 +7,15 @@ const path = require('path');
 const cp = require('child_process');
 const os = require('os');
 const fs = require('fs');
+const bodyParser = require('body-parser');
 
 let crypto = require("crypto");
 
 const PYSCRIPT_PATH = path.join(__dirname, "..", "src", "pytorch.py");
 const PORT = 80;
 
-// const EXPIRETIME = 30*60000;
-const EXPIRETIME = 100000;
+const EXPIRETIME = 30 * 60000;
+// const EXPIRETIME = 100000;
 
 const MEM_OPT = true;
 
@@ -51,12 +52,15 @@ const app = express();
 app.use("/", express.static(path.join(__dirname, "..", "frontend", "dist")));
 app.use("/img", express.static(path.join(__dirname, "..", "temp")));
 
+app.use(bodyParser.json());
+
 app.post('/api', (req, res) => {
-    res.send('Got a POST request')
+    console.log(req.body)
+    res.send("h")
 })
 
 app.listen(PORT, () => {
-    console.log(`Hey yo im on http://127.0.0.1:${PORT}!`);
+    console.log(`Hey yo im on http://127.0.0.1:${PORT} !`);
 });
 
 let taskList = new Map<String, RenderStat>();
@@ -133,6 +137,10 @@ function concatArg(req: RenderStat): string {
     return _arg;
 }
 
+function checkReq(req: any) {
+
+}
+
 interface RenderReq {
     type: "img2img" | "txt2img",
     prompt: string,
@@ -143,6 +151,7 @@ interface RenderReq {
     width: number,
     sampler: "DDIM" | "Euler",
     seed: number,
+    srcImg: string, // no impl yet
 }
 
 interface RenderStat {
@@ -168,15 +177,14 @@ interface RenderStat {
 // }
 // logger();
 
-// addTask({ type: "", prompt: "pony", scale: 7.5, steps: 30, height: 512, width: 512, sampler: "DDIM", seed: -1, reqTime: new Date().getTime() } as RenderReq)
-addTask({
-    type: "txt2img",
-    prompt: "pony",
-    negPrompt: "3d sfm",
-    scale: 7,
-    steps: 35,
-    height: 384,
-    width: 512,
-    sampler: "Euler",
-    seed: 127,
-})
+// addTask({
+//     type: "txt2img",
+//     prompt: "pony",
+//     negPrompt: "3d sfm",
+//     scale: 7,
+//     steps: 35,
+//     height: 384,
+//     width: 512,
+//     sampler: "Euler",
+//     seed: 127,
+// })
