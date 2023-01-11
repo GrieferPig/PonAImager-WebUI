@@ -8,23 +8,41 @@ const cp = require('child_process');
 const os = require('os');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-
 let crypto = require("crypto");
 
 const PYSCRIPT_PATH = path.join(__dirname, "..", "src", "pytorch.py");
 const PORT = 80;
 
 const EXPIRETIME = 30 * 60000;
-// const EXPIRETIME = 100000;
 
 const MEM_OPT = true;
 
+const MAX_STEPS = 60;
+const MAX_HEIGHT = 512;
+const MAX_WIDTH = 512;
+const MIN_HEIGHT = 128;
+const MIN_WIDTH = 128;
+
 const daemon = cp.spawn("python", [PYSCRIPT_PATH, "--listen"]);
+
+// used to check req
+const demoReq: RenderReq = {
+    type: "txt2img",
+    prompt: "pony",
+    negPrompt: "3d sfm",
+    scale: 7,
+    steps: 35,
+    height: 384,
+    width: 512,
+    sampler: "Euler",
+    seed: 127,
+    srcImg: "",
+};
 
 let daemonInit = false;
 
 daemon.stdout.on('data', (data: Buffer) => {
-    console.log("stdout: " + data.toString());
+    // console.log("stdout: " + data.toString());
     if (data.toString() === "ready" + os.EOL) {
         if (!daemonInit) {
             daemonInit = true;
@@ -54,9 +72,42 @@ app.use("/img", express.static(path.join(__dirname, "..", "temp")));
 
 app.use(bodyParser.json());
 
-app.post('/api', (req, res) => {
-    console.log(req.body)
-    res.send("h")
+app.post('/req', (req, res) => {
+    // console.log(req.body);
+    let reqRes: ReqRespond = { status: "yay", detail: "" };
+    let checkRes = checkReq(req.body);
+    // console.log(checkRes)
+    if (checkRes !== "") {
+        // console.log(checkRes)
+        reqRes.status = "neigh";
+        reqRes.detail = checkRes;
+    } else {
+        reqRes.detail = addTask(req.body);
+    }
+    res.send(reqRes);
+})
+
+app.post('/query', (req, res) => {
+    // console.log(req.body);
+    let queryRes: QueryRes = {
+        status: "yay",
+        renderStat: undefined,
+    };
+    if (typeof (req.body as QueryReq).uuid !== "string") {
+        queryRes.status = "wot";
+        res.send(queryRes);
+        return;
+    }
+    let stat = taskList.get((req.body as QueryReq).uuid);
+    if (typeof stat === 'undefined') {
+        queryRes.status = "neigh";
+        res.send(queryRes);
+        return;
+    } else {
+        queryRes.renderStat = stat;
+        res.send(queryRes);
+        return;
+    }
 })
 
 app.listen(PORT, () => {
@@ -137,8 +188,37 @@ function concatArg(req: RenderStat): string {
     return _arg;
 }
 
-function checkReq(req: any) {
-
+function checkReq(req: RenderReq): string {
+    for (let key in demoReq) {
+        if (!req.hasOwnProperty(key)) {
+            return "Malformed request"
+        }
+    }
+    if (req.type !== "txt2img") {
+        return "Only txt2img render type is supported";
+    }
+    if (req.prompt.split(" ").length > 77) {
+        return "Prompt too long";
+    }
+    if (req.negPrompt.split(" ").length > 77) {
+        return "Negative prompt too long";
+    }
+    if (req.scale < 0) {
+        return "Scale must be positive";
+    }
+    if (req.steps < 1 && req.steps > MAX_STEPS) {
+        return `Steps out of range (1-${MAX_STEPS})`;
+    }
+    if (req.height < MIN_HEIGHT && req.height > MAX_HEIGHT) {
+        return `Height out of range (${MIN_HEIGHT}-${MAX_HEIGHT})`;
+    }
+    if (req.width < MIN_WIDTH && req.width > MAX_WIDTH) {
+        return `Width out of range (${MIN_WIDTH}-${MAX_WIDTH})`;
+    }
+    if ((req.width % 32 !== 0) && (req.height % 32 !== 0)) {
+        return "Height/Width is not multiplies of 32"
+    }
+    return "";
 }
 
 interface RenderReq {
@@ -168,6 +248,19 @@ interface RenderStat {
     origReq: RenderReq,
 }
 
+interface ReqRespond {
+    status: "yay" | "neigh", // TRADITION
+    detail: string,
+}
+
+interface QueryReq {
+    uuid: string,
+}
+
+interface QueryRes {
+    status: "yay" | "neigh" | "wot",
+    renderStat: RenderStat | undefined,
+}
 
 // function logger() {
 //     setTimeout(() => {
