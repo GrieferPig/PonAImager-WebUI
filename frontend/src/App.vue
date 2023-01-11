@@ -17,6 +17,7 @@ export default {
       scale: 7,
       steps: 35,
       height: 384,
+      width: 384,
       sampler: "Euler",
       seed: 127,
       srcImg: "",
@@ -26,19 +27,26 @@ export default {
         'Content-Type': 'application/json'
       },
     }).then((res) => {
-      console.log(res);
-      let req: QueryReq = {
-        uuid: (res.data as ReqRespond).detail as string,
-      }
-      axios.post("/query", req, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      }).then((res) => {
-        console.log(res)
-      })
+      console.log(res.data)
+      requestInfo(res)
     })
   }
+}
+
+function requestInfo(res) {
+  setTimeout(() => {
+    let req: QueryReq = {
+      uuid: (res.data as ReqRespond).detail as string,
+    }
+    axios.post("/query", req, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then((res1) => {
+      console.log(res1.data)
+      requestInfo(res)
+    })
+  }, 1000);
 }
 
 interface RenderReq {

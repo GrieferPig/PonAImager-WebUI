@@ -68,7 +68,7 @@ daemon.on('close', (code) => {
 const app = express();
 
 app.use("/", express.static(path.join(__dirname, "..", "frontend", "dist")));
-app.use("/img", express.static(path.join(__dirname, "..", "temp")));
+app.use("/temp", express.static(path.join(__dirname, "..", "temp")));
 
 app.use(bodyParser.json());
 
@@ -123,7 +123,7 @@ function addTask(req: RenderReq): string {
     taskList.set(_uuid, {
         status: "Pending",
         detail: "",
-        currentIter: -1,
+        currentIter: 0,
         iterSpeed: "",
         estiTime: 0,
         uuid: _uuid,
@@ -164,7 +164,7 @@ function finishTask() {
         let _path = path.join(__dirname, "..", "temp", _UUIDcopy + ".png");
         fs.unlink(_path, (err) => {
             //ignore this
-            if (err) console.log(err);
+            // if (err) console.log(err);
         });
     }, EXPIRETIME)
     renderingUUID = "";
