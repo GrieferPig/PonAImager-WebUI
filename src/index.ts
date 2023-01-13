@@ -1,6 +1,12 @@
 // surprisingly this code works on first try gj to me
 
-export { }
+import {
+    RenderReq,
+    RenderStat,
+    ReqRespond,
+    QueryReq,
+    QueryRes,
+} from '../frontend/src/types'
 
 const express = require("express");
 const path = require('path');
@@ -40,6 +46,10 @@ const demoReq: RenderReq = {
 };
 
 let daemonInit = false;
+
+let taskList = new Map<String, RenderStat>();
+let pendingUUID: String[] = [];
+let renderingUUID: string = "";
 
 daemon.stdout.on('data', (data: Buffer) => {
     // console.log("stdout: " + data.toString());
@@ -108,15 +118,19 @@ app.post('/query', (req, res) => {
         res.send(queryRes);
         return;
     }
-})
+});
+
+app.get('/howManyRequestsAreThere', (req, res) => {
+    res.send(pendingUUID.length);
+});
+
+app.get("/student", function (req, res) {
+    res.send("student");
+});
 
 app.listen(PORT, () => {
     console.log(`Hey yo im on http://127.0.0.1:${PORT} !`);
 });
-
-let taskList = new Map<String, RenderStat>();
-let pendingUUID: String[] = [];
-let renderingUUID: string = "";
 
 function addTask(req: RenderReq): string {
     let _uuid = crypto.randomUUID();
@@ -188,6 +202,8 @@ function concatArg(req: RenderStat): string {
     return _arg;
 }
 
+// TODO: impl a similar checker in the frontend to 
+// reduce potential request
 function checkReq(req: RenderReq): string {
     for (let key in demoReq) {
         if (!req.hasOwnProperty(key)) {
@@ -219,47 +235,6 @@ function checkReq(req: RenderReq): string {
         return "Height/Width is not multiplies of 32"
     }
     return "";
-}
-
-interface RenderReq {
-    type: "img2img" | "txt2img",
-    prompt: string,
-    negPrompt: string,
-    scale: number,
-    steps: number,
-    height: number,
-    width: number,
-    sampler: "DDIM" | "Euler",
-    seed: number,
-    srcImg: string, // no impl yet
-}
-
-interface RenderStat {
-    status: "Finished" | "Pending" | "Error" | "Rendering",
-    detail: string,
-    currentIter: number,
-    iterSpeed: string, // no impl yet
-    estiTime: number, // no impl yet
-    uuid: string,
-    filePath: string,
-    expireTime: number,
-    reqTime: number,
-    finishTime: number,
-    origReq: RenderReq,
-}
-
-interface ReqRespond {
-    status: "yay" | "neigh", // TRADITION
-    detail: string,
-}
-
-interface QueryReq {
-    uuid: string,
-}
-
-interface QueryRes {
-    status: "yay" | "neigh" | "wot",
-    renderStat: RenderStat | undefined,
 }
 
 // function logger() {
