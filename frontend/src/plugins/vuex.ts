@@ -1,5 +1,6 @@
 import { createStore } from 'vuex'
 import VuexPersistence from 'vuex-persist'
+import { RenderStatus } from '@/types';
 
 const vuexLocal = new VuexPersistence({
     storage: window.localStorage
@@ -10,7 +11,7 @@ export function loadVuex() {
         state() {
             return {
                 isDarkMode: false,
-                isRendering: false,
+                renderStatus: "idle" as RenderStatus,
                 renderUUID: "",
                 isCookieAgreed: false,
             }
@@ -19,9 +20,9 @@ export function loadVuex() {
             toggleDarkMode(state) {
                 state.isDarkMode = !state.isDarkMode;
             },
-            setRendering(state, status: boolean) {
-                state.isRendering = status;
-                if (!status) {
+            setRendering(state, status: RenderStatus) {
+                state.renderStatus = status;
+                if (status === "idle") {
                     state.renderUUID = "";
                 }
             },

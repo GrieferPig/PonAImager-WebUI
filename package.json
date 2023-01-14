@@ -2,10 +2,10 @@
   "name": "ponaimager-backend",
   "version": "1.0.0",
   "description": "A web UI for Stable Diffusion with a modern design similiar to stable-diffusion-ui",
-  "main": "src/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "frontend": "node scripts/buildFrontend.js",
-    "backend": "npx tsc && node dist/index.js",
+    "backend": "npx tsc && node dist/src/index.js",
     "start": "npm run backend",
     "dryStart": "npm run frontend && npm run backend",
     "clean": "node scripts/clean.js"

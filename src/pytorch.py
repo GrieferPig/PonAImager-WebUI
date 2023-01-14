@@ -87,10 +87,11 @@ pipe = pipe.to(device)
 
 # pipp-sized gpu mem optim
 # disable if ur mem is average height (8GiB+)
+# no acturally use this if u have xformers installed
 if args.noopt:
     # pipe.enable_sequential_cpu_offload()
-    # pipe.enable_xformers_memory_efficient_attention()
-    pipe.enable_attention_slicing()
+    pipe.enable_xformers_memory_efficient_attention()
+    # pipe.enable_attention_slicing()
     # pipe.enable_vae_slicing()
 
 # since nodejs doesn't receive tqdm's output for some reason

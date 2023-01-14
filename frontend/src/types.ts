@@ -1,14 +1,15 @@
 interface RenderReq {
-    type: "img2img" | "txt2img",
+    type: "img2img" | "txt2img", // img2img no impl yet
     prompt: string,
     negPrompt: string,
     scale: number,
     steps: number,
     height: number,
     width: number,
-    sampler: "DDIM" | "Euler",
+    sampler: "DDIM" | "Euler", // impl more sampler
     seed: number,
     srcImg: string, // no impl yet
+    watermark: boolean, // no impl yet
 }
 
 interface RenderStat {
@@ -40,10 +41,14 @@ interface QueryRes {
     renderStat: RenderStat | undefined,
 }
 
+type RenderStatus = ("idle" | "pending" | "rendering" | "done" | "error");
+
 export type {
     RenderReq,
     RenderStat,
     ReqRespond,
     QueryReq,
     QueryRes,
+    RenderStatus,
 }
+

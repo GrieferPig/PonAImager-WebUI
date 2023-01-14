@@ -1,0 +1,10 @@
+@font-face {
+  font-family: "Adventure";
+  src: url("@/assets/font/Adventure.ttf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.font-adventure {
+  font-family: "Adventure" !important;
+}

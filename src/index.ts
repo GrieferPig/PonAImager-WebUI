@@ -16,7 +16,7 @@ const fs = require('fs');
 const bodyParser = require('body-parser');
 let crypto = require("crypto");
 
-const PYSCRIPT_PATH = path.join(__dirname, "..", "src", "pytorch.py");
+const PYSCRIPT_PATH = path.join(__dirname, "..", "..", "src", "pytorch.py");
 const PORT = 80;
 
 const EXPIRETIME = 30 * 60000;
@@ -43,6 +43,7 @@ const demoReq: RenderReq = {
     sampler: "Euler",
     seed: 127,
     srcImg: "",
+    watermark: true,
 };
 
 let daemonInit = false;
@@ -52,7 +53,6 @@ let pendingUUID: String[] = [];
 let renderingUUID: string = "";
 
 daemon.stdout.on('data', (data: Buffer) => {
-    // console.log("stdout: " + data.toString());
     if (data.toString() === "ready" + os.EOL) {
         if (!daemonInit) {
             daemonInit = true;
@@ -77,18 +77,15 @@ daemon.on('close', (code) => {
 
 const app = express();
 
-app.use("/", express.static(path.join(__dirname, "..", "frontend", "dist")));
-app.use("/temp", express.static(path.join(__dirname, "..", "temp")));
+app.use("/", express.static(path.join(__dirname, "..", "..", "frontend", "dist")));
+app.use("/temp", express.static(path.join(__dirname, "..", "..", "temp")));
 
 app.use(bodyParser.json());
 
 app.post('/req', (req, res) => {
-    // console.log(req.body);
     let reqRes: ReqRespond = { status: "yay", detail: "" };
     let checkRes = checkReq(req.body);
-    // console.log(checkRes)
     if (checkRes !== "") {
-        // console.log(checkRes)
         reqRes.status = "neigh";
         reqRes.detail = checkRes;
     } else {
@@ -98,7 +95,6 @@ app.post('/req', (req, res) => {
 })
 
 app.post('/query', (req, res) => {
-    // console.log(req.body);
     let queryRes: QueryRes = {
         status: "yay",
         renderStat: undefined,
@@ -175,10 +171,9 @@ function finishTask() {
     let _UUIDcopy = renderingUUID + ""; // deep copy
     setTimeout(() => {
         taskList.delete(_UUIDcopy);
-        let _path = path.join(__dirname, "..", "temp", _UUIDcopy + ".png");
+        let _path = path.join(__dirname, "..", "..", "temp", _UUIDcopy + ".png");
         fs.unlink(_path, (err) => {
             //ignore this
-            // if (err) console.log(err);
         });
     }, EXPIRETIME)
     renderingUUID = "";
@@ -236,23 +231,3 @@ function checkReq(req: RenderReq): string {
     }
     return "";
 }
-
-// function logger() {
-//     setTimeout(() => {
-//         console.log(taskList)
-//         logger()
-//     }, 10000)
-// }
-// logger();
-
-// addTask({
-//     type: "txt2img",
-//     prompt: "pony",
-//     negPrompt: "3d sfm",
-//     scale: 7,
-//     steps: 35,
-//     height: 384,
-//     width: 512,
-//     sampler: "Euler",
-//     seed: 127,
-// })
