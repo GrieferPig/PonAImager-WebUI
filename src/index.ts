@@ -13,8 +13,11 @@ const path = require('path');
 const cp = require('child_process');
 const os = require('os');
 const fs = require('fs');
-const bodyParser = require('body-parser');
 let crypto = require("crypto");
+
+const bodyParser = require('body-parser');
+let compression = require('compression')
+const helmet = require("helmet");
 
 const PYSCRIPT_PATH = path.join(__dirname, "..", "..", "src", "pytorch.py");
 const PORT = 80;
@@ -77,10 +80,14 @@ daemon.on('close', (code) => {
 
 const app = express();
 
-app.use("/", express.static(path.join(__dirname, "..", "..", "frontend", "dist")));
-app.use("/temp", express.static(path.join(__dirname, "..", "..", "temp")));
-
 app.use(bodyParser.json());
+app.use(compression({ level: 9, memLevel: 9 }));
+// TODO: impl https to use this to secure connection
+// app.use(helmet()); 
+
+app.use("/", express.static(path.join(__dirname, "..", "..", "frontend", "dist")));
+app.use("/assets", express.static(path.join(__dirname, "..", "..", "frontend", "dist", "assets")));
+app.use("/temp", express.static(path.join(__dirname, "..", "..", "temp")));
 
 app.post('/req', (req, res) => {
     let reqRes: ReqRespond = { status: "yay", detail: "" };
@@ -123,6 +130,8 @@ app.get('/howManyRequestsAreThere', (req, res) => {
 app.get("/student", function (req, res) {
     res.send("student");
 });
+
+
 
 app.listen(PORT, () => {
     console.log(`Hey yo im on http://127.0.0.1:${PORT} !`);

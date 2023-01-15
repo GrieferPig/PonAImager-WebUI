@@ -52,8 +52,6 @@
                     <Help />
                 </v-window-item>
             </v-window>
-
-            <v-btn @click="$store.commit('disagreeCookie')">disagree</v-btn>
         </v-main>
     </v-app>
 </template>
@@ -118,11 +116,18 @@ export default {
         isDarkMode(newValue) {
             this.theme.global.name.value = newValue ? 'darkTheme' : 'lightTheme';
         }
+    },
+    mounted() {
+        if (this.$store.state.renderStatus === "error" || this.$store.state.renderStatus === "done") {
+            this.$store.commit("setRendering", "idle")
+        }
     }
 }
 </script>
 
 <style>
+@import '..\node_modules\roboto-fontface\css\roboto\roboto-fontface.css';
+
 v-main {
     background-color: rgb(var(--v-theme-background));
 }

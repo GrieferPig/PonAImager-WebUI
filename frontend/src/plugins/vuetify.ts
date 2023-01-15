@@ -10,8 +10,7 @@ import 'vuetify/styles'
 // Composables
 import { createVuetify, ThemeDefinition } from 'vuetify'
 import { mdi } from 'vuetify/iconsets/mdi-svg'
-import '@fortawesome/fontawesome-free/css/all.css'
-import { aliases, fa } from 'vuetify/iconsets/fa'
+import { aliases, fa } from 'vuetify/iconsets/fa-svg'
 
 // Themes
 const lightTheme: ThemeDefinition = {

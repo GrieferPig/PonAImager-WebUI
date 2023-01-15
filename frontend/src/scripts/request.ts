@@ -10,19 +10,19 @@ async function requestInfo(uuid: string): Promise<QueryRes> {
     let req: QueryReq = {
         uuid: uuid,
     }
-    return await axios.post("/query", req, {
+    return (await axios.post("/query", req, {
         headers: {
             'Content-Type': 'application/json'
         },
-    });
+    })).data;
 }
 
 async function requestRender(req: RenderReq): Promise<ReqRespond> {
-    return await axios.post("/req", req, {
+    return (await axios.post("/req", req, {
         headers: {
             'Content-Type': 'application/json'
         },
-    });
+    })).data;
 }
 
 async function howManyRequestsAreThere(): Promise<number> {

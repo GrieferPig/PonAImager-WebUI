@@ -43,4 +43,8 @@ This model is open access and available to all, with a CreativeML OpenRAIL-M lic
 
 This model can be used for entertainment purposes and as a generative art assistant.
 
+## Disclaimer
 
+Font used: A New Adventure, Hasbro Inc, Adapted by EveryDayDashie
+Icon: Adapted from derpibooru.org
+I own absolutely nothing here except for the source code of this website. You may contact me for a take down request if you are the respective content owner.

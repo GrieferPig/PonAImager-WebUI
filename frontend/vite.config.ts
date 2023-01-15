@@ -17,7 +17,9 @@ export default defineConfig({
     vuetify({
       autoImport: true,
     }),
-    viteCompression(),
+    // viteCompression({
+    //   deleteOriginFile: true,
+    // }),
   ],
   define: { 'process.env': {} },
   resolve: {

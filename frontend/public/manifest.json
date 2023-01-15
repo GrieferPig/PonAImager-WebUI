@@ -4,7 +4,7 @@
   "theme_color": "#2196f3",
   "background_color": "#2196f3",
   "display": "standalone",
-  "description": "A web UI for Stable Diffusion with a modern design similiar to stable-diffusion-ui",
+  "description": "Generate AI Pony images online",
   "scope": "/",
   "start_url": "/",
   "icons": [
