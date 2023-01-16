@@ -1,5 +1,7 @@
 // surprisingly this code works on first try gj to me
 
+// TODO: add shuffle example prompts function
+
 // custom types
 import {
     RenderReq,
@@ -9,6 +11,7 @@ import {
     QueryRes,
     ServerConfig,
     ServerInfo,
+    ServerStatus,
 } from '../frontend/src/types'
 
 import * as express from 'express'
@@ -36,7 +39,7 @@ const PYSCRIPT_PATH = path.join(ROOT_PATH, "src", "pytorch.py");
 const CONFIG_PATH = path.join(ROOT_PATH, "config.json");
 
 // setup logger
-let log = log4js.getLogger();
+let log = log4js.getLogger("main");
 log.level = "all";
 
 let conf: ServerConfig;
@@ -59,21 +62,22 @@ if (fs.existsSync(CONFIG_PATH)) {
 const HTTP_PORT = conf.web['http-port'];
 const STRICT = conf.web.https.strict;
 
-const EXPIRETIME = conf.render['image-expire-time'];
+// remember to convert to millseconds
+const EXPIRETIME = conf.render['image-expire-time'] * 1000 * 60;
 
 // maxs and mins
 const MAX_STEPS = conf.render.maximum.steps;
 const MIN_STEPS = conf.render.minimum.steps;
-const DEF_STEPS = conf.render.default.steps;
+const DEF_STEPS = conf.render.defaults.steps;
 const MAX_HEIGHT = conf.render.maximum.height;
 const MIN_HEIGHT = conf.render.minimum.height;
-const DEF_HEIGHT = conf.render.default.height;
+const DEF_HEIGHT = conf.render.defaults.height;
 const MAX_WIDTH = conf.render.maximum.width;
 const MIN_WIDTH = conf.render.minimum.width;
-const DEF_WIDTH = conf.render.default.width;
+const DEF_WIDTH = conf.render.defaults.width;
 const MAX_SCALE = conf.render.maximum.scale;
 const MIN_SCALE = conf.render.minimum.scale;
-const DEF_SCALE = conf.render.default.scale;
+const DEF_SCALE = conf.render.defaults.scale;
 const MAX_TOKEN_LENGTH = conf.render.maximum['token-length'];
 
 // used to check req
@@ -90,7 +94,6 @@ const demoReq: RenderReq = {
     watermark: true,
 };
 
-// TODO: impl this in py
 function genLaunchArg(optims: typeof conf.render.optimizations, device: string, modelId: string, revision: string, disableChecker: boolean, downloadProxy: string): string[] {
     let args: string[] = ["--listen"];
     if (optims['attention-slicing']) {
@@ -126,28 +129,31 @@ const daemon = cp.spawn("python",
         conf.render['disable-nsfw-checker'],
         conf.render['download-proxy']
     ),
-    { shell: true }
+    { shell: true } // python won't pick up the parameters if not in shell
 );
 
 let daemonInit = false;
 
 let taskList = new Map<String, RenderStat>();
 let pendingUUID: String[] = [];
-let renderingUUID: string = "";
+let renderingUUID = "";
+let taskCounter = 0
 
 daemon.stdout.on('data', (data: Buffer) => {
     if (data.toString() === "ready" + os.EOL) {
         if (!daemonInit) {
             daemonInit = true;
+            log.info("Python: Ready to generate.")
         } else {
             finishTask();
-            startNextTask();
         }
+        startNextTask();
     } else {
         if (daemonInit) {
             updateRenderingTask(data);
+        } else {
+            log.debug(`Python: ${data.toString()}`)
         }
-        log.debug(`Python: ${data.toString()}`)
     }
 });
 
@@ -156,25 +162,34 @@ daemon.stderr.on('data', (data) => {
 });
 
 daemon.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
-    console.log("Server halt on fatal error");
+    log.error(`Child process exited with code ${code}`);
+    log.error("Server halt on fatal error");
     process.exit(code!);
 });
 
 const app = express();
 
 app.use(bodyParser.json());
-app.use(compression({ level: 9, memLevel: 9 }));
+if (compression) {
+    log.info(`Use compression with level ${conf.web.compression.level}`)
+    app.use(compression({ level: conf.web.compression.level, memLevel: conf.web.compression.level }));
+}
 if (STRICT) {
+    log.info("Use strict headers")
     app.use(helmet());
 }
+
+app.use((err, req, res, next) => {
+    log.error(`Server: ${err.stack}`)
+    res.status(500).send('Something broke!')
+})
 
 app.use("/", express.static(WEBSITE_ROOT_PATH));
 app.use("/assets", express.static(WEBSITE_ASSET_PATH));
 app.use("/temp", express.static(TEMP_PATH));
 
 app.post('/req', (req, res) => {
-    let reqRes: ReqRespond = { status: "yay", detail: "" };
+    let reqRes: ReqRespond = { status: "yay", reqNo: taskCounter + 1, detail: "" };
     let checkRes = checkReq(req.body);
     if (checkRes !== "") {
         reqRes.status = "neigh";
@@ -207,8 +222,18 @@ app.post('/query', (req, res) => {
     }
 });
 
+// one-time fetch for clients, consts
 app.get('/serverInfo', (req, res) => {
     res.send(conf.render as ServerInfo);
+});
+
+// need to update in frontend every second, vars
+app.get('/serverStatus', (req, res) => {
+    res.send({
+        pendingRequests: pendingUUID.length,
+        doneRequests: taskCounter,
+        averageIterSpeed: 0 // TODO:impl
+    } as ServerStatus);
 });
 
 app.listen(HTTP_PORT, () => {
@@ -241,7 +266,7 @@ function startNextTask() {
             renderingUUID = pendingUUID.shift() as string;
             let _task: RenderStat = taskList.get(renderingUUID) as RenderStat;
             let _args: string = concatArg(_task);
-            console.log(`Launching task ${renderingUUID} with args ${_args}`)
+            log.info(`Launching task ${taskCounter + 1}: ${renderingUUID} with args ${_args}`)
             daemon.stdin.write(_args)
         }
     }
@@ -264,6 +289,8 @@ function finishTask() {
         });
     }, EXPIRETIME)
     renderingUUID = "";
+
+    taskCounter++;
 }
 
 function updateRenderingTask(proc_output: Buffer) {

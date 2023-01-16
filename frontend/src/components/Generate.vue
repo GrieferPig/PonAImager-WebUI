@@ -119,26 +119,36 @@
                         <v-row>
                             <v-col>
                                 <v-btn block color="primary" @click="sendRequest()"
-                                    :disabled="renderStatus === 'pending' || renderStatus === 'rendering'">Generate</v-btn>
+                                    :disabled="isGenerateDisabled">Generate</v-btn>
                             </v-col>
                         </v-row>
                         <v-row>
                             <v-col>
                                 <v-card variant="flat" id="renderImage">
                                     <v-img aspect-ratio="1" :src="imageSrc"></v-img>
-                                    <v-overlay v-model="imageOverlay" contained class="align-center justify-center">
-                                        <div v-show="renderStatus === 'idle'">
-                                            <p class="text-h2 text-center">&#128558;</p>
-                                            <p class="text-h6 text-center pa-2">You don't have any render requests now.
-                                            </p>
-                                            <p class="text-body-1 text-center text-medium-emphasis pa-2">
-                                                Start by entering your prompt above and click Generate.</p>
-                                        </div>
-                                    </v-overlay>
+                                    <div v-show="renderStatus !== 'done'">
+                                        <v-overlay v-model="imageOverlay" contained class="align-center justify-center">
+                                            <div v-show="renderStatus === 'idle'">
+                                                <p class="text-h2 text-center">&#128558;</p>
+                                                <p class="text-h6 text-center pa-2">You don't have any render requests
+                                                    now.
+                                                </p>
+                                                <p class="text-body-1 text-center text-medium-emphasis pa-2">
+                                                    Start by entering your prompt above and click Generate.</p>
+                                            </div>
+                                            <div v-show="renderStatus === 'pending' || renderStatus === 'rendering'">
+                                                pending + rendering
+                                            </div>
+                                            <div v-show="renderStatus === 'error'">
+                                                error
+                                            </div>
+                                            <!-- TODO: add a image loading screen -->
+                                        </v-overlay>
+                                    </div>
                                 </v-card>
                             </v-col>
                         </v-row>
-                        <v-row v-show="showRateAndDownload">
+                        <v-row v-if="showRateAndDownload">
                             <v-spacer></v-spacer>
                             <v-col cols="12" sm="4">
                                 <p class="text-center text-subtitle-1 h-100 w-100 mb-n4">
@@ -187,11 +197,35 @@
 
 <script lang="ts">
 import { RenderReq, QueryRes, RenderStatus, ReqRespond } from '@/types'
-import { requestInfo, requestRender, howManyRequestsAreThere } from '@/scripts/request'
+import { requestInfo, requestRender, serverInfo, serverStatus } from '@/scripts/request'
 import { AxiosError } from 'axios'
 import { VForm } from '../../node_modules/vuetify/lib/components'
 
 export default {
+    async mounted() {
+        try {
+            console.log(await serverInfo());
+            console.log(await serverStatus());
+            this.$store.commit("purgeHistory");
+            console.log(this.$store.state.history);
+            if (this.renderStatus !== "idle") {
+                if (this.renderStatus === "reqsent") {
+                    this.errorPopup("Congratulations, seems like you tried to send a render request last time, but for some reasons the server did not confirm your request. The image you requested may still be rendered, but oops, there's no way you may find that image again. Sorry about that. (Achivement unlocked: A Tragic Moment)");
+                    this.$store.commit("setRendering", "idle");
+                } else {
+                    let _res = await requestInfo(this.$store.state.renderUUID);
+                    if (_res.status === "yay") {
+                        await this.poll(this.$store.state.renderUUID);
+                    } else {
+                        this.$store.commit("setRenderUUID", "")
+                    }
+                }
+            }
+            this.$emit('update:pageLoading', false);
+        } catch (e) {
+            this.errorPopup("Network error while connecting to the server. Please try again.")
+        }
+    },
     data() {
         let steplabels: string[] = [];
         steplabels.length = 35;
@@ -279,32 +313,30 @@ export default {
     },
     computed: {
         renderStatus(): RenderStatus {
-            return this.$store.state.renderStatus;
+            return this.$store.state.renderStatus as RenderStatus;
         },
         renderUUID() {
             return this.$store.state.renderUUID;
         },
+        isGenerateDisabled() {
+            return (this.renderStatus === 'rendering') || (this.renderStatus === 'reqsent') || (this.renderStatus === 'pending')
+        }
     },
     watch: {
         imageOverlay(_newV) {
             if (this.renderStatus !== "done") {
                 this.imageOverlay = true;
             }
-        },
-        renderStatus(_newV) {
-            if (this.renderStatus === "done") {
-                this.showRateAndDownload = true;
-            }
-            this.showRateAndDownload = false;
         }
     },
     methods: {
         async sendRequest() {
             const { valid } = await (this.$refs.form as VForm).validate()
             if (!valid) {
-                console.log("invalid")
                 return;
             }
+            this.$store.commit("setRendering", "reqsent");
+            this.showRateAndDownload = false;
             let _res: ReqRespond;
             let _req: RenderReq = {
                 type: "txt2img",
@@ -327,64 +359,67 @@ export default {
             console.log(_res)
             switch (_res.status) {
                 case "yay":
-                    this.errorPopup("Success, uuid=" + _res.detail);
-                    this.$store.commit("setRendering", "Pending");
+                    this.$store.commit("setRendering", "pending");
                     this.$store.commit("setRenderUUID", _res.detail)
-                    this.poll(_res.detail);
+                    await this.poll(_res.detail);
                     break;
                 case "neigh":
                     this.errorPopup(_res.detail);
                     break;
             }
         },
-        poll(uuid: string) {
+        async poll(uuid: string) {
+            const _poll = async () => {
+                let _res: QueryRes;
+                try {
+                    _res = await requestInfo(uuid);
+                } catch (err) {
+                    this.errorPopup((err as AxiosError).message)
+                    return;
+                }
+                console.log(_res);
+                switch (_res.status) {
+                    case "yay":
+                        switch (_res.renderStat?.status) {
+                            case "Pending":
+                                this.$store.commit("setRendering", "pending");
+                                console.log("pending");
+                                break;
+                            case "Finished":
+                                this.$store.commit("setRendering", "done");
+                                console.log("finished " + _res.renderStat.filePath);
+                                this.imageSrc = _res.renderStat.filePath
+                                this.errorPopup("finished " + _res.renderStat.finishTime)
+                                this.$store.commit("setRenderUUID", "")
+                                this.showRateAndDownload = true;
+                                this.$store.commit("addToHistory", _res.renderStat)
+                                return;
+                            case "Rendering":
+                                this.$store.commit("setRendering", "rendering");
+                                console.log("currentIter " + _res.renderStat.currentIter);
+                                break;
+                            case "Error":
+                                this.$store.commit("setRendering", "error");
+                                console.log("error");
+                                this.$store.commit("setRenderUUID", "")
+                                return;
+                        }
+                        setTimeout(async () => {
+                            await _poll();
+                        }, 1000);
+                        break;
+                    case "neigh":
+                        this.errorPopup("UUID not found in task list");
+                        this.$store.commit("setRendering", "error");
+                        break;
+                    case "wot":
+                        this.errorPopup("UUID not string");
+                        break;
+                }
+            };
             setTimeout(async () => {
-                await this._poll(uuid);
+                await _poll();
             }, 1000)
-        },
-        async _poll(uuid) {
-            let _res: QueryRes;
-            try {
-                _res = await requestInfo(uuid);
-            } catch (err) {
-                this.errorPopup((err as AxiosError).message)
-                return;
-            }
-            console.log(_res);
-            switch (_res.status) {
-                case "yay":
-                    switch (_res.renderStat?.status) {
-                        case "Pending":
-                            this.$store.commit("setRendering", "pending");
-                            console.log("pending");
-                            break;
-                        case "Finished":
-                            this.$store.commit("setRendering", "done");
-                            console.log("finished " + _res.renderStat.filePath);
-                            this.imageSrc = _res.renderStat.filePath
-                            this.errorPopup("finished " + _res.renderStat.finishTime)
-                            return;
-                        case "Rendering":
-                            this.$store.commit("setRendering", "rendering");
-                            console.log("currentIter " + _res.renderStat.currentIter);
-                            break;
-                        case "Error":
-                            this.$store.commit("setRendering", "error");
-                            console.log("rendering");
-                            return;
-                    }
-                    setTimeout(async () => {
-                        await this._poll(uuid);
-                    }, 1000);
-                    break;
-                case "neigh":
-                    this.errorPopup("UUID not found in task list");
-                    this.$store.commit("setRendering", "error");
-                    break;
-                case "wot":
-                    this.errorPopup("UUID not string");
-                    break;
-            }
         },
         errorPopup(info: string) {
             this.dialogContent = info;
@@ -401,7 +436,9 @@ export default {
             this.seed = "-1";
             this.watermark = true;
         },
-    }
+    },
+    props: ['pageLoading'],
+    emits: ['update:pageLoading'],
 }
 </script>
 

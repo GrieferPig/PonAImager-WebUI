@@ -25,7 +25,6 @@ export interface Compression {
 export interface Render {
     optimizations: Optimizations
     "render-device": string
-    sampler: string[]
     maximum: Maximum
     minimum: Minimum
     defaults: Default

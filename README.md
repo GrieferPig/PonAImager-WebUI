@@ -1,11 +1,16 @@
 # PonAImager
 
 A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) but with a modern design and much LESS options because I am a noob and I don't know what does they do.
+
+Demo: [available here](https://ponaimager.top/), 503 = server fked up, *plz do not ddos ty*
+
 doc wip
 
 im not going serious on this proj i use this proj to get hands on express framework and vuejs so dont expect (any) further maintenance once this proj is finished
 
 ## Setup
+
+TODO: move to wiki
 
 - ensure latest nvidia driver
 - https://pytorch.org/get-started/locally/ (u need 3.7-3.9 on win)
@@ -16,6 +21,8 @@ im not going serious on this proj i use this proj to get hands on express framew
 - npm run dryStart
 
 ## Args
+
+TODO: explain, move to wiki
 
 - [] prompts (77 tokens limit)
 - [] steps(10-60)
@@ -28,6 +35,8 @@ im not going serious on this proj i use this proj to get hands on express framew
 refer to [this guide](https://cdn.discordapp.com/attachments/704107851421057114/1034605063567573002/Tutorial_for_purplesmart_V0.2.1.pdf)
 
 # License info
+
+TODO: copy to wiki
 
 (Adapted from [pony-diffusion](https://huggingface.co/AstraliteHeart/pony-diffusion))
 

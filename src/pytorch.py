@@ -4,6 +4,7 @@ import diffusers
 from torch import autocast
 import torch
 import sys
+import time
 # get rid of the warnings
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -176,6 +177,10 @@ def draw(v, scale, steps, height, width, filename, negative):
 # my oc, informaly known as "Sawtooth Soundgoodizer"
 # v = "cool ((((solo)))) ((male)) (((pegasus))) with (white skin dark blue short mane cyan iris) wearing sunglasses looking at you smiling highly detailed portrait realistic illustration high resolution {profile pic} awesome {{Unreal Engine 8K}}"
 
+# NodeJS: Hey Python wait up!
+time.sleep(0.1)
+
+# TODO: Investigate on this problem (maybe call zipp she might be useful)
 println("ready")
 if args.listen:
     while True:

@@ -21,7 +21,6 @@
             "vae-slicing": false
         },
         "render-device": "cpu",
-        "sampler": ["DDIM", "Euler"],
         "maximum": {
             "steps": 50,
             "scale": 15,

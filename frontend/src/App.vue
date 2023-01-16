@@ -1,6 +1,6 @@
 <template>
     <v-app>
-        <v-app-bar class="px-3" flat density="compact">
+        <v-app-bar v-if="!pageLoading" class="px-3" flat density="compact">
             <v-spacer></v-spacer>
             <v-tabs centered fixed-tabs v-model="currentTab">
                 <v-tab v-for="tab in tabs" :key="tab" :value="tab">
@@ -21,37 +21,42 @@
         </v-app-bar>
 
         <v-main>
-            <!-- agree kookie -->
-            <v-slide-y-transition>
-                <v-container v-show="!isCookieAgreed">
-                    <v-row>
-                        <v-spacer></v-spacer>
-                        <v-col cols="12" xl="9">
-                            <v-card class="overflow-auto mx-auto" elevation="3">
-                                <v-banner lines="three" icon="$warning" color="warning">
-                                    <v-banner-text>
-                                        We use cookies (not muffins) to ensure this website works properly.
-                                    </v-banner-text>
+            <div v-show="!pageLoading">
+                <!-- agree kookie -->
+                <v-slide-y-transition>
+                    <v-container v-if="!isCookieAgreed">
+                        <v-row>
+                            <v-spacer></v-spacer>
+                            <v-col cols="12" xl="9">
+                                <v-card class="overflow-auto mx-auto" elevation="3">
+                                    <v-banner lines="three" icon="$warning" color="warning">
+                                        <v-banner-text>
+                                            We use cookies (not muffins) to ensure this website works properly.
+                                        </v-banner-text>
 
-                                    <template v-slot:actions>
-                                        <v-btn @click="agreeCookie">Got it</v-btn>
-                                    </template>
-                                </v-banner>
-                            </v-card>
-                        </v-col>
-                        <v-spacer></v-spacer>
-                    </v-row>
-                </v-container>
-            </v-slide-y-transition>
+                                        <template v-slot:actions>
+                                            <v-btn @click="agreeCookie">Got it</v-btn>
+                                        </template>
+                                    </v-banner>
+                                </v-card>
+                            </v-col>
+                            <v-spacer></v-spacer>
+                        </v-row>
+                    </v-container>
+                </v-slide-y-transition>
 
-            <v-window v-model="currentTab">
-                <v-window-item value="Generate">
-                    <Generate />
-                </v-window-item>
-                <v-window-item value="Help">
-                    <Help />
-                </v-window-item>
-            </v-window>
+                <v-window v-model="currentTab">
+                    <v-window-item value="Generate">
+                        <Generate v-model:page-loading="pageLoading" />
+                    </v-window-item>
+                    <v-window-item value="Help">
+                        <Help />
+                    </v-window-item>
+                </v-window>
+            </div>
+            <v-overlay v-model="pageLoading" class="align-center justify-center">
+                <v-progress-circular color="primary" indeterminate size="64"></v-progress-circular>
+            </v-overlay>
         </v-main>
     </v-app>
 </template>
@@ -88,7 +93,8 @@ export default {
                 'Help',
             ],
             currentTab: 1,
-            darkModeIcon: darkModeIcon
+            darkModeIcon: darkModeIcon,
+            pageLoading: true,
         }
     },
     computed: {

@@ -28,6 +28,7 @@ interface RenderStat {
 
 interface ReqRespond {
     status: "yay" | "neigh", // TRADITION
+    reqNo: number
     detail: string,
 }
 
@@ -44,7 +45,7 @@ import { ServerConfig, Render } from "./config";
 
 type ServerInfo = Render;
 
-type RenderStatus = ("idle" | "pending" | "rendering" | "done" | "error");
+type RenderStatus = ("idle" | "reqsent" | "pending" | "rendering" | "done" | "error");
 
 interface ServerStatus {
     pendingRequests: number,
@@ -60,5 +61,6 @@ export type {
     QueryRes,
     RenderStatus,
     ServerConfig,
-    ServerInfo
+    ServerInfo,
+    ServerStatus,
 }
