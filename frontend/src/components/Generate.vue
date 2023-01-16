@@ -39,14 +39,7 @@
                                                         <v-card title="Sampler" variant="flat"
                                                             subtitle="If generated image have glitches, use DDIM">
                                                             <v-card-text>
-                                                                <v-btn-toggle v-model="sampler" rounded="0"
-                                                                    color="secondary" group divided mandatory
-                                                                    variant="outlined">
-                                                                    <v-btn v-for="sam in availSamplers" :key="sam"
-                                                                        :value="sam">
-                                                                        {{ sam }}
-                                                                    </v-btn>
-                                                                </v-btn-toggle>
+                                                                TODO: remove this
                                                             </v-card-text>
                                                         </v-card>
                                                     </v-col>
@@ -222,15 +215,12 @@ export default {
 
             prompt: "",
             negPrompt: "",
-            sampler: "DDIM",
             height: "512",
             width: "512",
             steps: 40,
             scale: 7.5,
             seed: "-1",
             watermark: true,
-
-            availSamplers: ["DDIM", "Euler"],
 
             showRateAndDownload: false,
 
@@ -324,7 +314,6 @@ export default {
                 steps: this.steps,
                 height: parseInt(this.height),
                 width: parseInt(this.width),
-                sampler: this.sampler as ("DDIM" | "Euler"),
                 seed: parseInt(this.seed),
                 srcImg: "",
                 watermark: this.watermark
@@ -405,7 +394,6 @@ export default {
             this.prompt = "TODO: impl prompt example filling";
         },
         resetAdvanced() {
-            this.sampler = "DDIM";
             this.height = "512";
             this.width = "512";
             this.scale = 7.5;

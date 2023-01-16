@@ -6,9 +6,8 @@ interface RenderReq {
     steps: number,
     height: number,
     width: number,
-    sampler: "DDIM" | "Euler", // impl more sampler
     seed: number,
-    srcImg: string, // no impl yet
+    srcImg: string, // TODO: impl
     watermark: boolean, // no impl yet
 }
 
@@ -16,7 +15,7 @@ interface RenderStat {
     status: "Finished" | "Pending" | "Error" | "Rendering",
     detail: string,
     currentIter: number,
-    iterSpeed: string, // no impl yet
+    iterSpeed: string, // TODO: impl
     estiTime: number, // no impl yet
     uuid: string,
     filePath: string,
@@ -41,7 +40,17 @@ interface QueryRes {
     renderStat: RenderStat | undefined,
 }
 
+import { ServerConfig, Render } from "./config";
+
+type ServerInfo = Render;
+
 type RenderStatus = ("idle" | "pending" | "rendering" | "done" | "error");
+
+interface ServerStatus {
+    pendingRequests: number,
+    doneRequests: number,
+    averageIterSpeed: number,
+}
 
 export type {
     RenderReq,
@@ -50,5 +59,6 @@ export type {
     QueryReq,
     QueryRes,
     RenderStatus,
+    ServerConfig,
+    ServerInfo
 }
-

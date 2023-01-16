@@ -1,6 +1,8 @@
 dist
 src/*.png
-src/pony-model
+pony-model
 node_modules
 frontend/node_modules
 temp
+.vscode
+config.json

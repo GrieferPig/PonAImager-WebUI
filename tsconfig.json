@@ -1,11 +1,15 @@
 {
-    "extends": "@tsconfig/recommended/tsconfig.json",
     "exclude": [
         "frontend/**/*"
+    ],
+    "include": [
+        "frontend/src/types.ts",
+        "src/**/*"
     ],
     "compilerOptions": {
         "moduleResolution": "Node",
         "noImplicitAny": false,
-        "outDir": "dist"
-    },
+        "outDir": "dist",
+        "resolveJsonModule": true
+    }
 }

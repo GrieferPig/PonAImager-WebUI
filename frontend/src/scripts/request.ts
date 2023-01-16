@@ -7,7 +7,7 @@ import {
 import axios from 'axios'
 
 async function requestInfo(uuid: string): Promise<QueryRes> {
-    let req: QueryReq = {
+    const req: QueryReq = {
         uuid: uuid,
     }
     return (await axios.post("/query", req, {
