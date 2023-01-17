@@ -50,12 +50,12 @@
                                                                 <v-row>
                                                                     <v-col>
                                                                         <v-text-field variant="outlined"
-                                                                            :rules="dimenRules" label="Height"
+                                                                            :rules="dimenRulesHeight" label="Height"
                                                                             v-model="height"></v-text-field>
                                                                     </v-col>
                                                                     <v-col>
                                                                         <v-text-field variant="outlined"
-                                                                            :rules="dimenRules" label="Width"
+                                                                            :rules="dimenRulesWidth" label="Width"
                                                                             v-model="width"></v-text-field>
                                                                     </v-col>
                                                                 </v-row>
@@ -69,8 +69,8 @@
                                                             subtitle="Set to 40 for optimal results">
                                                             <v-card-text>
                                                                 <v-slider v-model="steps" :ticks="stepsTickLabel"
-                                                                    :min="15" :max="50" :step="1" show-ticks thumb-label
-                                                                    color="secondary"></v-slider>
+                                                                    :min="MIN_STEPS" :max="MAX_STEPS" :step="1"
+                                                                    show-ticks thumb-label color="secondary"></v-slider>
                                                             </v-card-text>
                                                         </v-card>
                                                     </v-col>
@@ -79,8 +79,8 @@
                                                             subtitle="Don't touch this.">
                                                             <v-card-text>
                                                                 <v-slider v-model="scale" :ticks="scaleTickLabel"
-                                                                    :min="0" :max="15" :step="0.5" show-ticks
-                                                                    thumb-label color="secondary"></v-slider>
+                                                                    :min="MIN_SCALE" :max="MAX_SCALE" :step="0.5"
+                                                                    show-ticks thumb-label color="secondary"></v-slider>
                                                             </v-card-text>
                                                         </v-card>
                                                     </v-col>
@@ -100,7 +100,8 @@
                                                         <v-card title="Watermark" variant="flat" subtitle="TODO: impl">
                                                             <v-card-text>
                                                                 <v-checkbox label="Watermark" v-model="watermark"
-                                                                    disabled color="secondary"></v-checkbox>
+                                                                    :disabled="watermarkForce"
+                                                                    color="secondary"></v-checkbox>
                                                             </v-card-text>
                                                         </v-card>
                                                     </v-col>
@@ -197,15 +198,19 @@
 
 <script lang="ts">
 import { RenderReq, QueryRes, RenderStatus, ReqRespond } from '@/types'
-import { requestInfo, requestRender, serverInfo, serverStatus } from '@/scripts/request'
+import { requestInfo, requestRender, serverStatus } from '@/scripts/request'
 import { AxiosError } from 'axios'
 import { VForm } from '../../node_modules/vuetify/lib/components'
-import { getRules } from '@/scripts/checkRules'
+import { getDefaults } from '@/scripts/getDefaults'
 
 export default {
     async mounted() {
+        this.steps = this.DEF_STEPS;
+        this.height = this.DEF_HEIGHT + "";
+        this.width = this.DEF_WIDTH + "";
+        this.scale = this.DEF_SCALE;
+        this.watermark = this.DEF_WATERMARK;
         try {
-            console.log(await serverInfo());
             console.log(await serverStatus());
             this.$store.commit("purgeHistory");
             console.log(this.$store.state.history);
@@ -232,18 +237,27 @@ export default {
             this.errorPopup("Network error while connecting to the server. Please try again.")
         }
     },
-    data() {
-        let steplabels: string[] = [];
-        steplabels.length = 35;
-        steplabels[14] = "15";
-        steplabels[34] = "50"
-
-        let scalelabels: string[] = [];
-        scalelabels.length = 30;
-        scalelabels[0] = "0";
-        scalelabels[29] = "15"
-
+    async setup() {
+        let defaults;
+        try {
+            defaults = await getDefaults();
+            console.log(defaults)
+        } catch (e) {
+            alert("Network error while connecting to the server. Please try again.")
+            location.reload();
+        }
         return {
+            ...defaults,
+        }
+    },
+    data() {
+        return {
+            steps: 0,
+            height: "",
+            width: "",
+            scale: 0,
+            watermark: false,
+
             valid: true,
             dialog: false,
             dialogContent: "dialogContent",
@@ -256,19 +270,76 @@ export default {
 
             prompt: "",
             negPrompt: "",
-            height: "512",
-            width: "512",
-            steps: 40,
-            scale: 7.5,
             seed: "-1",
-            watermark: true,
 
             showRateAndDownload: false,
 
-            ...getRules(),
-
-            stepsTickLabel: steplabels,
-            scaleTickLabel: scalelabels,
+            promptRules: [
+                (v: string) => {
+                    if (!v.length) {
+                        return 'Required'
+                    }
+                    if (v.split(" ").length > this.MAX_TOKEN_LENGTH()) {
+                        return 'Too many prompts'
+                    }
+                    return true;
+                }
+            ],
+            negPromptRules: [
+                (v: string) => {
+                    if (v.split(" ").length > this.MAX_TOKEN_LENGTH()) {
+                        return 'Too many prompts'
+                    }
+                    return true;
+                }
+            ],
+            dimenRulesHeight: [
+                (v) => {
+                    if (!v.length) {
+                        return 'Required'
+                    }
+                    if (!(/^\d+$/.test(v))) {
+                        return "Not a number"
+                    }
+                    const value = +v as number
+                    if (value < this.MIN_HEIGHT() || value > this.MAX_HEIGHT()) {
+                        return "Out of range"
+                    }
+                    if (value % 32 !== 0) {
+                        return "Not multiplies of 32"
+                    }
+                    return true;
+                }
+            ],
+            dimenRulesWidth: [
+                (v) => {
+                    if (!v.length) {
+                        return 'Required'
+                    }
+                    if (!(/^\d+$/.test(v))) {
+                        return "Not a number"
+                    }
+                    const value = +v as number
+                    if (value < this.MIN_WIDTH() || value > this.MAX_WIDTH()) {
+                        return "Out of range"
+                    }
+                    if (value % 32 !== 0) {
+                        return "Not multiplies of 32"
+                    }
+                    return true;
+                }
+            ],
+            seedRules: [
+                (v) => {
+                    if (!v.length) {
+                        return 'Required'
+                    }
+                    if (!(/^(-?)\d+$/.test(v))) {
+                        return "Not a number"
+                    }
+                    return true;
+                }
+            ],
         }
     },
     computed: {
@@ -420,12 +491,12 @@ export default {
         },
         resetAdvanced() {
             // leave neg prompt alone
-            this.height = "512";
-            this.width = "512";
-            this.scale = 7.5;
-            this.steps = 40;
+            this.height = this.DEF_HEIGHT + "";
+            this.width = this.DEF_WIDTH + "";
+            this.scale = this.DEF_SCALE;
+            this.steps = this.DEF_STEPS;
             this.seed = "-1";
-            this.watermark = true;
+            this.watermark = this.DEF_WATERMARK;
         },
     },
     props: ['pageLoading'],

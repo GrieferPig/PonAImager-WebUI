@@ -19,7 +19,6 @@
                 <div style="height: 48px; width:48px"></div>
             </template>
         </v-app-bar>
-
         <v-main>
             <div v-show="!pageLoading">
                 <!-- agree kookie -->
@@ -47,7 +46,9 @@
 
                 <v-window v-model="currentTab">
                     <v-window-item value="Generate">
-                        <Generate v-model:page-loading="pageLoading" />
+                        <Suspense>
+                            <Generate v-model:page-loading="pageLoading" />
+                        </Suspense>
                     </v-window-item>
                     <v-window-item value="Help">
                         <Help />

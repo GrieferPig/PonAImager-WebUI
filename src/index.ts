@@ -66,18 +66,15 @@ const STRICT = conf.web.https.strict;
 const EXPIRETIME = conf.render['image-expire-time'] * 1000 * 60;
 
 // maxs and mins
+// TODO: add server side req check
 const MAX_STEPS = conf.render.maximum.steps;
 const MIN_STEPS = conf.render.minimum.steps;
-const DEF_STEPS = conf.render.defaults.steps;
 const MAX_HEIGHT = conf.render.maximum.height;
 const MIN_HEIGHT = conf.render.minimum.height;
-const DEF_HEIGHT = conf.render.defaults.height;
 const MAX_WIDTH = conf.render.maximum.width;
 const MIN_WIDTH = conf.render.minimum.width;
-const DEF_WIDTH = conf.render.defaults.width;
 const MAX_SCALE = conf.render.maximum.scale;
 const MIN_SCALE = conf.render.minimum.scale;
-const DEF_SCALE = conf.render.defaults.scale;
 const MAX_TOKEN_LENGTH = conf.render.maximum['token-length'];
 
 // used to check req
