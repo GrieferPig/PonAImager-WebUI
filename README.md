@@ -4,11 +4,21 @@
     <br>
 <p>
 
-A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) but with a modern design and much LESS options because I am a noob and I don't know what does they do.
+### WARN: Under heavy development, please do not use in production environments.
 
-Demo: [available here](https://ponaimager.top/), 503 = server fked up, *plz do not ddos ty*
+A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) but with a modern design _and much LESS options because I am a noob and I don't know what does they do._
 
-国人建议使用[china.ponaimager.top](china.ponaimager.top)以获得最佳速度
+### Features
+
+- Modern material design, robust user interface, fine-tuned website for fast loading speed (400KiB~ data transmitted without cache on loading)
+- Highly customizable through config.json, should be compatible with most models trained with Stable Diffusion pipeline.
+- Easy to set up & launch without any programming skills needed (but you should be familiar with command lines which is fairly easy)
+- PWA Support! You may install this as a desktop app for a better experience.
+- More to come
+
+Demo: [available here](https://ponaimager.top/), 503 = server fked up, __*plz do not ddos ty*__
+
+国人建议使用[china.ponaimager.top](http://china.ponaimager.top)以获得最佳速度
 
 doc wip
 
