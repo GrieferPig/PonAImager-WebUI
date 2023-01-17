@@ -163,10 +163,10 @@
                                 </div>
                             </v-col>
                             <v-col cols="12" sm="4">
-                                <v-btn class="h-75 w-100" color="primary">Download</v-btn>
+                                <v-btn class="h-75 w-100" color="primary" :download="imageSrc">Download</v-btn>
                                 <p class="text-truncate text-no-wrap text-caption text-medium-emphasis text-center">
                                     Image will
-                                    expire in {{ imageExpireTime }}</p>
+                                    expire in {{ imageExpireIn }}</p>
                             </v-col>
                             <v-spacer></v-spacer>
                         </v-row>
@@ -200,6 +200,7 @@ import { RenderReq, QueryRes, RenderStatus, ReqRespond } from '@/types'
 import { requestInfo, requestRender, serverInfo, serverStatus } from '@/scripts/request'
 import { AxiosError } from 'axios'
 import { VForm } from '../../node_modules/vuetify/lib/components'
+import { getRules } from '@/scripts/checkRules'
 
 export default {
     async mounted() {
@@ -210,14 +211,19 @@ export default {
             console.log(this.$store.state.history);
             if (this.renderStatus !== "idle") {
                 if (this.renderStatus === "reqsent") {
+                    // this might be very rare but im going to write this for precaution
+                    // TODO: make the dialog more comedic
                     this.errorPopup("Congratulations, seems like you tried to send a render request last time, but for some reasons the server did not confirm your request. The image you requested may still be rendered, but oops, there's no way you may find that image again. Sorry about that. (Achievement unlocked: A Tragic Moment)");
                     this.$store.commit("setRendering", "idle");
                 } else {
                     let _res = await requestInfo(this.$store.state.renderUUID);
                     if (_res.status === "yay") {
+                        // still active, resume process
                         await this.poll(this.$store.state.renderUUID);
                     } else {
+                        // dead (expired maybe)
                         this.$store.commit("setRenderUUID", "")
+                        this.$store.commit("setRendering", "idle");
                     }
                 }
             }
@@ -245,7 +251,8 @@ export default {
             imageSrc: "",
             imageOverlay: true,
             imageRating: 0,
-            imageExpireTime: "30:00",
+            imageExpireIn: "30:00",
+            imageExpireTimestamp: 0,
 
             prompt: "",
             negPrompt: "",
@@ -258,54 +265,7 @@ export default {
 
             showRateAndDownload: false,
 
-            promptRules: [
-                (v: string) => {
-                    if (!v.length) {
-                        return 'Required'
-                    }
-                    if (v.split(" ").length > 77) {
-                        return 'Too many prompts'
-                    }
-                    return true;
-                }
-            ],
-            negPromptRules: [
-                (v: string) => {
-                    if (v.split(" ").length > 77) {
-                        return 'Too many prompts'
-                    }
-                    return true;
-                }
-            ],
-            dimenRules: [
-                (v) => {
-                    if (!v.length) {
-                        return 'Required'
-                    }
-                    if (!(/^\d+$/.test(v))) {
-                        return "Not a number"
-                    }
-                    let value = +v as number
-                    if (value < 32 || value > 512) {
-                        return "Out of range"
-                    }
-                    if (value % 32 !== 0) {
-                        return "Not multiplies of 32"
-                    }
-                    return true;
-                }
-            ],
-            seedRules: [
-                (v) => {
-                    if (!v.length) {
-                        return 'Required'
-                    }
-                    if (!(/^(-?)\d+$/.test(v))) {
-                        return "Not a number"
-                    }
-                    return true;
-                }
-            ],
+            ...getRules(),
 
             stepsTickLabel: steplabels,
             scaleTickLabel: scalelabels,
@@ -387,12 +347,13 @@ export default {
                                 break;
                             case "Finished":
                                 this.$store.commit("setRendering", "done");
+                                this.$store.commit("setRenderUUID", "")
+                                this.$store.commit("addToHistory", _res.renderStat)
                                 console.log("finished " + _res.renderStat.filePath);
                                 this.imageSrc = _res.renderStat.filePath
-                                this.errorPopup("finished " + _res.renderStat.finishTime)
-                                this.$store.commit("setRenderUUID", "")
                                 this.showRateAndDownload = true;
-                                this.$store.commit("addToHistory", _res.renderStat)
+                                this.imageExpireTimestamp = _res.renderStat.expireTime;
+                                this.imageExpireCounter();
                                 return;
                             case "Rendering":
                                 this.$store.commit("setRendering", "rendering");
@@ -400,8 +361,8 @@ export default {
                                 break;
                             case "Error":
                                 this.$store.commit("setRendering", "error");
-                                console.log("error");
                                 this.$store.commit("setRenderUUID", "")
+                                console.log("error");
                                 return;
                         }
                         setTimeout(async () => {
@@ -421,6 +382,35 @@ export default {
                 await _poll();
             }, 1000)
         },
+        purgeHistory() {
+            // purge history every 10 sec
+            this.$store.commit("purgeHistory");
+            setTimeout(() => {
+                this.purgeHistory();
+            }, 10000)
+        },
+        imageExpireCounter() {
+            let _date = new Date().getTime();
+            let _expireIn = this.imageExpireTimestamp - _date;
+            if (_expireIn < 0) {
+                //expired
+                this.$store.commit("purgeHistory");
+                this.$store.commit("setRendering", "idle");
+                this.$store.commit("setRenderUUID", "")
+                this.imageSrc = ""
+                this.showRateAndDownload = false;
+                // TODO: inform user with a snackbar
+                return;
+            } else if (_expireIn > 3600000) {
+                this.imageExpireIn = new Date(_expireIn).toISOString().slice(11, 19);
+            } else {
+                this.imageExpireIn = new Date(_expireIn).toISOString().slice(14, 19);
+            }
+            // poll every second
+            setTimeout(() => {
+                this.imageExpireCounter()
+            }, 1000);
+        },
         errorPopup(info: string) {
             this.dialogContent = info;
             this.dialog = true;
@@ -429,6 +419,7 @@ export default {
             this.prompt = "TODO: impl prompt example filling";
         },
         resetAdvanced() {
+            // leave neg prompt alone
             this.height = "512";
             this.width = "512";
             this.scale = 7.5;

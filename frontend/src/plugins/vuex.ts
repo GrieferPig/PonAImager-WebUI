@@ -56,7 +56,6 @@ export function loadVuex() {
                 const _time = new Date().getTime();
                 for (const his of state.history) {
                     if (his.expireTime < _time) {
-                        console.log(his.expireTime, _time)
                         // the oldest (first to expire) is always at the last
                         state.history.pop()
                     }
