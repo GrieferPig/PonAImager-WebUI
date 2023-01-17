@@ -8,27 +8,3 @@
 .font-adventure {
   font-family: "Adventure" !important;
 }
-
-.doc-title {
-  font-family: "Adventure" !important;
-  width: 100%;
-  user-select: none;
-  background: linear-gradient(135deg, #c5cae9 0%, #303f9f 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-size: 12.5vw;
-  margin-top: -24px;
-  margin-bottom: -24px;
-}
-
-.doc-subtitle {
-  font-family: "Adventure" !important;
-  width: 100%;
-  user-select: none;
-  background: linear-gradient(135deg, #c5cae9 0%, #303f9f 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-size: 3vw;
-}
