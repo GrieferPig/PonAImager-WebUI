@@ -183,7 +183,12 @@ app.use((err, req, res, next) => {
 
 app.use("/", express.static(WEBSITE_ROOT_PATH));
 app.use("/assets", express.static(WEBSITE_ASSET_PATH));
-app.use("/temp", express.static(TEMP_PATH));
+app.use("/temp", express.static(TEMP_PATH, {
+    setHeaders: function (res, path) {
+        // download the img instead of showing it
+        res.type("application/x-please-download-me")
+    }
+}));
 
 app.post('/req', (req, res) => {
     let reqRes: ReqRespond = { status: "yay", reqNo: taskCounter + 1, detail: "" };

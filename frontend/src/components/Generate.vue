@@ -35,15 +35,7 @@
                                                     </v-col>
                                                 </v-row>
                                                 <v-row>
-                                                    <v-col cols="12" md="6">
-                                                        <v-card title="Sampler" variant="flat"
-                                                            subtitle="If generated image have glitches, use DDIM">
-                                                            <v-card-text>
-                                                                TODO: remove this
-                                                            </v-card-text>
-                                                        </v-card>
-                                                    </v-col>
-                                                    <v-col cols="12" md="6">
+                                                    <v-col>
                                                         <v-card title="Dimension" variant="flat"
                                                             subtitle="Larger size = longer rendering time">
                                                             <v-card-text>
@@ -65,8 +57,7 @@
                                                 </v-row>
                                                 <v-row>
                                                     <v-col cols="12" md="6">
-                                                        <v-card title="Steps" variant="flat"
-                                                            subtitle="Set to 40 for optimal results">
+                                                        <v-card title="Steps" variant="flat" subtitle="TODO: new sub">
                                                             <v-card-text>
                                                                 <v-slider v-model="steps" :ticks="stepsTickLabel"
                                                                     :min="MIN_STEPS" :max="MAX_STEPS" :step="1"
@@ -75,8 +66,7 @@
                                                         </v-card>
                                                     </v-col>
                                                     <v-col cols="12" md="6">
-                                                        <v-card title="Scale" variant="flat"
-                                                            subtitle="Don't touch this.">
+                                                        <v-card title="Scale" variant="flat" subtitle="TODO: new sub">
                                                             <v-card-text>
                                                                 <v-slider v-model="scale" :ticks="scaleTickLabel"
                                                                     :min="MIN_SCALE" :max="MAX_SCALE" :step="0.5"
@@ -129,20 +119,43 @@
                                     <v-img aspect-ratio="1" :src="imageSrc"></v-img>
                                     <div v-show="renderStatus !== 'done'">
                                         <v-overlay v-model="imageOverlay" contained class="align-center justify-center">
-                                            <div v-show="renderStatus === 'idle'">
-                                                <p class="text-h2 text-center">&#128558;</p>
-                                                <p class="text-h6 text-center pa-2">You don't have any render requests
-                                                    now.
-                                                </p>
-                                                <p class="text-body-1 text-center text-medium-emphasis pa-2">
-                                                    Start by entering your prompt above and click Generate.</p>
-                                            </div>
-                                            <div v-show="renderStatus === 'pending' || renderStatus === 'rendering'">
-                                                pending + rendering
-                                            </div>
-                                            <div v-show="renderStatus === 'error'">
-                                                error
-                                            </div>
+                                            <v-fade-transition>
+                                                <div v-show="renderStatus === 'idle'">
+                                                    <p class="text-h2 text-center">&#128558;</p>
+                                                    <p class="text-h6 text-center pa-2">You don't have any render
+                                                        requests
+                                                        now.
+                                                    </p>
+                                                    <p class="text-body-1 text-center text-medium-emphasis pa-2">
+                                                        Start by entering your prompt above and click Generate.</p>
+                                                </div>
+                                            </v-fade-transition>
+                                            <v-fade-transition>
+                                                <!-- TODO: text does not display -->
+                                                <v-progress-circular v-show="isGenerateDisabled"
+                                                    :indeterminate="renderStatus !== 'rendering'" :size="64"
+                                                    color="secondary" :model-value="renderProgress"
+                                                    class="text-center"></v-progress-circular>
+                                                <div v-show="isGenerateDisabled">
+                                                    <p class="text-h6 text-center pa-2 text-medium-emphasis"
+                                                        v-show="renderStatus === 'reqsent'">Request sent, awaiting
+                                                        respond
+                                                    </p>
+                                                    <p class="text-h6 text-center pa-2 text-medium-emphasis"
+                                                        v-show="renderStatus === 'pending'">Queued, 114514 requests
+                                                        ahead
+                                                    </p>
+                                                    <p class="text-h6 text-center pa-2 text-medium-emphasis"
+                                                        v-show="renderStatus === 'rendering'">Rendering
+                                                    </p>
+                                                </div>
+                                            </v-fade-transition>
+                                            <v-fade-transition>
+                                                <div v-show="renderStatus === 'error'">
+                                                    TODO: impl
+                                                    error
+                                                </div>
+                                            </v-fade-transition>
                                             <!-- TODO: add a image loading screen -->
                                         </v-overlay>
                                     </div>
@@ -164,7 +177,7 @@
                                 </div>
                             </v-col>
                             <v-col cols="12" sm="4">
-                                <v-btn class="h-75 w-100" color="primary" :download="imageSrc">Download</v-btn>
+                                <v-btn class="h-75 w-100" color="primary" :href="imageSrc">Download</v-btn>
                                 <p class="text-truncate text-no-wrap text-caption text-medium-emphasis text-center">
                                     Image will
                                     expire in {{ imageExpireIn }}</p>
@@ -210,6 +223,73 @@ export default {
         this.width = this.DEF_WIDTH + "";
         this.scale = this.DEF_SCALE;
         this.watermark = this.DEF_WATERMARK;
+        this.promptRules = [
+            (v: string) => {
+                // eslint-disable-next-line no-extra-boolean-cast
+                if (v === null || v.length === 0) {
+                    return 'Required'
+                }
+                if (v.split(" ").length > this.MAX_TOKEN_LENGTH) {
+                    return 'Too many prompts'
+                }
+                return true;
+            }
+        ];
+        this.negPromptRules = [
+            (v: string) => {
+                if (v.split(" ").length > this.MAX_TOKEN_LENGTH) {
+                    return 'Too many prompts'
+                }
+                return true;
+            }
+        ];
+        this.dimenRulesHeight = [
+            (v) => {
+                if (!v.length) {
+                    return 'Required'
+                }
+                if (!(/^\d+$/.test(v))) {
+                    return "Not a number"
+                }
+                const value = +v as number
+                if (value < this.MIN_HEIGHT || value > this.MAX_HEIGHT) {
+                    return "Out of range"
+                }
+                if (value % 32 !== 0) {
+                    return "Not multiplies of 32"
+                }
+                return true;
+            }
+        ];
+        this.dimenRulesWidth = [
+            (v) => {
+                if (!v.length) {
+                    return 'Required'
+                }
+                if (!(/^\d+$/.test(v))) {
+                    return "Not a number"
+                }
+                const value = +v as number
+                if (value < this.MIN_WIDTH || value > this.MAX_WIDTH) {
+                    return "Out of range"
+                }
+                if (value % 32 !== 0) {
+                    return "Not multiplies of 32"
+                }
+                return true;
+            }
+        ];
+        this.seedRules = [
+            (v) => {
+                if (!v.length) {
+                    return 'Required'
+                }
+                if (!(/^(-?)\d+$/.test(v))) {
+                    return "Not a number"
+                }
+                return true;
+            }
+        ];
         try {
             console.log(await serverStatus());
             this.$store.commit("purgeHistory");
@@ -238,16 +318,33 @@ export default {
         }
     },
     async setup() {
-        let defaults;
         try {
-            defaults = await getDefaults();
-            console.log(defaults)
+            return {
+                ... await getDefaults(),
+            }
         } catch (e) {
             alert("Network error while connecting to the server. Please try again.")
             location.reload();
-        }
-        return {
-            ...defaults,
+            // not gonna reach here, but wrote for type inference
+            return {
+                MAX_STEPS: 0,
+                MIN_STEPS: 0,
+                DEF_STEPS: 0,
+                MAX_HEIGHT: 0,
+                MIN_HEIGHT: 0,
+                DEF_HEIGHT: 0,
+                MAX_WIDTH: 0,
+                MIN_WIDTH: 0,
+                DEF_WIDTH: 0,
+                MAX_SCALE: 0,
+                MIN_SCALE: 0,
+                DEF_SCALE: 0,
+                MAX_TOKEN_LENGTH: 0,
+                DEF_WATERMARK: false,
+                watermarkForce: false,
+                stepsTickLabel: [],
+                scaleTickLabel: [],
+            }
         }
     },
     data() {
@@ -262,6 +359,8 @@ export default {
             dialog: false,
             dialogContent: "dialogContent",
 
+            renderProgress: 0,
+
             imageSrc: "",
             imageOverlay: true,
             imageRating: 0,
@@ -274,72 +373,11 @@ export default {
 
             showRateAndDownload: false,
 
-            promptRules: [
-                (v: string) => {
-                    if (!v.length) {
-                        return 'Required'
-                    }
-                    if (v.split(" ").length > this.MAX_TOKEN_LENGTH()) {
-                        return 'Too many prompts'
-                    }
-                    return true;
-                }
-            ],
-            negPromptRules: [
-                (v: string) => {
-                    if (v.split(" ").length > this.MAX_TOKEN_LENGTH()) {
-                        return 'Too many prompts'
-                    }
-                    return true;
-                }
-            ],
-            dimenRulesHeight: [
-                (v) => {
-                    if (!v.length) {
-                        return 'Required'
-                    }
-                    if (!(/^\d+$/.test(v))) {
-                        return "Not a number"
-                    }
-                    const value = +v as number
-                    if (value < this.MIN_HEIGHT() || value > this.MAX_HEIGHT()) {
-                        return "Out of range"
-                    }
-                    if (value % 32 !== 0) {
-                        return "Not multiplies of 32"
-                    }
-                    return true;
-                }
-            ],
-            dimenRulesWidth: [
-                (v) => {
-                    if (!v.length) {
-                        return 'Required'
-                    }
-                    if (!(/^\d+$/.test(v))) {
-                        return "Not a number"
-                    }
-                    const value = +v as number
-                    if (value < this.MIN_WIDTH() || value > this.MAX_WIDTH()) {
-                        return "Out of range"
-                    }
-                    if (value % 32 !== 0) {
-                        return "Not multiplies of 32"
-                    }
-                    return true;
-                }
-            ],
-            seedRules: [
-                (v) => {
-                    if (!v.length) {
-                        return 'Required'
-                    }
-                    if (!(/^(-?)\d+$/.test(v))) {
-                        return "Not a number"
-                    }
-                    return true;
-                }
-            ],
+            promptRules: [(v) => { }] as [(v: string) => boolean | string],
+            negPromptRules: [(v) => { }] as [(v: string) => boolean | string],
+            dimenRulesHeight: [(v) => { }] as [(v: string) => boolean | string],
+            dimenRulesWidth: [(v) => { }] as [(v: string) => boolean | string],
+            seedRules: [(v) => { }] as [(v: string) => boolean | string],
         }
     },
     computed: {
@@ -358,6 +396,12 @@ export default {
             if (this.renderStatus !== "done") {
                 this.imageOverlay = true;
             }
+        },
+        negPrompt(_newV) {
+            if (_newV === null) {
+                // for some reason empty input = null
+                this.negPrompt = "";
+            }
         }
     },
     methods: {
@@ -368,6 +412,7 @@ export default {
             }
             this.$store.commit("setRendering", "reqsent");
             this.showRateAndDownload = false;
+            this.imageSrc = "";
             let _res: ReqRespond;
             let _req: RenderReq = {
                 type: "txt2img",
@@ -425,15 +470,18 @@ export default {
                                 this.showRateAndDownload = true;
                                 this.imageExpireTimestamp = _res.renderStat.expireTime;
                                 this.imageExpireCounter();
+                                this.renderProgress = 0;
                                 return;
                             case "Rendering":
                                 this.$store.commit("setRendering", "rendering");
                                 console.log("currentIter " + _res.renderStat.currentIter);
+                                this.renderProgress = (_res.renderStat.currentIter / _res.renderStat.origReq.steps) * 100
                                 break;
                             case "Error":
                                 this.$store.commit("setRendering", "error");
                                 this.$store.commit("setRenderUUID", "")
                                 console.log("error");
+                                this.renderProgress = 0;
                                 return;
                         }
                         setTimeout(async () => {
