@@ -38,15 +38,15 @@ export function loadVuex() {
             },
             addToHistory(state, renderStat: RenderStat) {
                 const _time = new Date().getTime();
-                // skip if renderstat is expired (bcs it will)
-                if (renderStat.expireTime < _time) {
+                if (renderStat.expireTime > _time) {
                     // LIFO
                     state.history.unshift(renderStat);
                     // pop the last one (which will always be this req) after expired
                     setTimeout(() => {
                         state.history.pop();
-                    })
+                    }, renderStat.expireTime - _time)
                 }
+                // skip if renderstat is expired (bcs it will)
             },
             clearHistory(state) {
                 state.history = []
@@ -54,8 +54,9 @@ export function loadVuex() {
             // only remove expired items
             purgeHistory(state) {
                 const _time = new Date().getTime();
-                for (const his: RenderStat of state.history) {
+                for (const his of state.history) {
                     if (his.expireTime < _time) {
+                        console.log(his.expireTime, _time)
                         // the oldest (first to expire) is always at the last
                         state.history.pop()
                     }

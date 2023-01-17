@@ -210,7 +210,7 @@ export default {
             console.log(this.$store.state.history);
             if (this.renderStatus !== "idle") {
                 if (this.renderStatus === "reqsent") {
-                    this.errorPopup("Congratulations, seems like you tried to send a render request last time, but for some reasons the server did not confirm your request. The image you requested may still be rendered, but oops, there's no way you may find that image again. Sorry about that. (Achivement unlocked: A Tragic Moment)");
+                    this.errorPopup("Congratulations, seems like you tried to send a render request last time, but for some reasons the server did not confirm your request. The image you requested may still be rendered, but oops, there's no way you may find that image again. Sorry about that. (Achievement unlocked: A Tragic Moment)");
                     this.$store.commit("setRendering", "idle");
                 } else {
                     let _res = await requestInfo(this.$store.state.renderUUID);
