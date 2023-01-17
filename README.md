@@ -1,8 +1,17 @@
-# PonAImager
+<link rel="stylesheet" href="./frontend/src/styles/font-adventure.css">
+
+<p align="center">
+    <br>
+    <p align="center" class="doc-title">PonAImager<span style="font-size: 16px">&#945;</span></p>
+    <br>
+    <p align="center" class="doc-subtitle">A modern, newbie-friendly, stable Web UI for stable-diffusion written in vue.js and node.js</span></p>
+<p>
 
 A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) but with a modern design and much LESS options because I am a noob and I don't know what does they do.
 
 Demo: [available here](https://ponaimager.top/), 503 = server fked up, *plz do not ddos ty*
+
+国人建议使用[china.ponaimager.top](china.ponaimager.top)以获得最佳速度
 
 doc wip
 
