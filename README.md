@@ -6,7 +6,7 @@
 
 ### WARN: Under heavy development, please do not use in production environments.
 
-A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) but with a modern design _and much LESS options because I am a noob and I don't know what does they do._
+A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) but with a modern design _and much LESS options because I am a noob and I don't know what does they do.
 
 ### Features
 
@@ -17,6 +17,8 @@ A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.c
 - More to come
 
 Demo: [available here](https://ponaimager.top/), 503 = server fked up, __*plz do not ddos ty*__
+
+Model used in demo: [AstraliteHeart/pony-diffusion](https://huggingface.co/AstraliteHeart/pony-diffusion)
 
 国人建议使用[china.ponaimager.top](http://china.ponaimager.top)以获得最佳速度
 
