@@ -16,7 +16,7 @@ A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.c
 - PWA Support! You may install this as a desktop app for a better experience.
 - More to come
 
-Demo: [available here](https://ponaimager.top/), 503 = server fked up, __*plz do not ddos ty*__
+Demo (Under maintenance): [available here](https://ponaimager.top/), 503 = server fked up, __*plz do not ddos ty*__
 
 Model used in demo: [AstraliteHeart/pony-diffusion](https://huggingface.co/AstraliteHeart/pony-diffusion)
 
