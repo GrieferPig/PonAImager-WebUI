@@ -16,41 +16,13 @@ A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.c
 - PWA Support! You may install this as a desktop app for a better experience.
 - More to come
 
+Refer to [the wiki](https://github.com/GrieferPig/PonAImager-WebUI/wiki/) for installation guide & more
+
 Demo (Under maintenance): [available here](https://ponaimager.top/), 503 = server fked up, __*plz do not ddos ty*__
 
 Model used in demo: [AstraliteHeart/pony-diffusion](https://huggingface.co/AstraliteHeart/pony-diffusion)
 
 国人建议使用[china.ponaimager.top](http://china.ponaimager.top)以获得最佳速度
-
-doc wip
-
-im not going serious on this proj i use this proj to get hands on express framework and vuejs so dont expect (any) further maintenance once this proj is finished
-
-## Setup
-
-TODO: move to wiki
-
-- ensure latest nvidia driver
-- https://pytorch.org/get-started/locally/ (u need 3.7-3.9 on win)
-- pip install transformers diffusers accelerate ninja
-- pip install -v -U git+https://github.com/facebookresearch/xformers.git@main#egg=xformers
-- nodejs v18+
-- npm i (backend+frontend)
-- npm run dryStart
-
-## Args
-
-TODO: explain, move to wiki
-
-- [] prompts (77 tokens limit)
-- [] steps(10-60)
-- [] height&width (max 512x768)
-- [] sampler(txt2img, ddim/klms)
-- [] seed
-- [] strength(img2img)
-- [] scale (img2img)
-
-refer to [this guide](https://cdn.discordapp.com/attachments/704107851421057114/1034605063567573002/Tutorial_for_purplesmart_V0.2.1.pdf)
 
 # License info
 
