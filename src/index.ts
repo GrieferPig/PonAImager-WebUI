@@ -155,7 +155,8 @@ daemon.stdout.on('data', (data: Buffer) => {
 });
 
 daemon.stderr.on('data', (data) => {
-    log.error("Stderr from python script: " + data.toString())
+    if (!(data.toString() as string).includes("Fetch"))
+        log.error("Stderr from python script: " + os.EOL + data.toString());
 });
 
 daemon.on('close', (code) => {

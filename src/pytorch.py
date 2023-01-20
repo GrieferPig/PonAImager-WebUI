@@ -109,8 +109,8 @@ println("Using model "+model_id + " revision " +
 torchType = torch.float16
 
 if device == "cpu":
-    torchType = None
-    println("Using CPU, disabled fp16")
+    torchType = torch.bfloat16
+    println("Using CPU, using bf16 instead of fp16")
 
 pipe = diffusers.StableDiffusionPipeline.from_pretrained(
     model_id,
@@ -157,12 +157,12 @@ def drawCallback(step, timestep, latents):
 
 
 def draw(v, scale, steps, height, width, filename, negative):
-    with autocast("cuda"):
+    with autocast(device):
         if args.seed == -1:
             image = pipe(v, guidance_scale=scale, num_inference_steps=steps,
                          height=height, width=width, negative_prompt=negative, callback=drawCallback).images[0]
         else:
-            generator = torch.Generator(device="cuda").manual_seed(args.seed)
+            generator = torch.Generator(device=device).manual_seed(args.seed)
             image = pipe(v, generator=generator, guidance_scale=scale, num_inference_steps=steps,
                          height=height, width=width, negative_prompt=negative, callback=drawCallback).images[0]
 

@@ -11,7 +11,7 @@
                                         class="text-body-1">&#945;</span></p>
                             </v-col>
                         </v-row>
-                        <v-form ref="form" v-model="valid" lazy-validation>
+                        <v-form ref="form" :model-value="valid" lazy-validation fast-fail>
                             <v-row>
                                 <v-col>
                                     <v-text-field clearable label="Enter Your Prompt Here"
@@ -119,43 +119,47 @@
                                     <v-img aspect-ratio="1" :src="imageSrc"></v-img>
                                     <div v-show="renderStatus !== 'done'">
                                         <v-overlay v-model="imageOverlay" contained class="align-center justify-center">
-                                            <v-fade-transition>
-                                                <div v-show="renderStatus === 'idle'">
-                                                    <p class="text-h2 text-center">&#128558;</p>
-                                                    <p class="text-h6 text-center pa-2">You don't have any render
-                                                        requests
-                                                        now.
-                                                    </p>
-                                                    <p class="text-body-1 text-center text-medium-emphasis pa-2">
-                                                        Start by entering your prompt above and click Generate.</p>
-                                                </div>
-                                            </v-fade-transition>
-                                            <v-fade-transition>
-                                                <!-- TODO: text does not display -->
-                                                <v-progress-circular v-show="isGenerateDisabled"
-                                                    :indeterminate="renderStatus !== 'rendering'" :size="64"
-                                                    color="secondary" :model-value="renderProgress"
-                                                    class="text-center"></v-progress-circular>
-                                                <div v-show="isGenerateDisabled">
-                                                    <p class="text-h6 text-center pa-2 text-medium-emphasis"
-                                                        v-show="renderStatus === 'reqsent'">Request sent, awaiting
-                                                        respond
-                                                    </p>
-                                                    <p class="text-h6 text-center pa-2 text-medium-emphasis"
-                                                        v-show="renderStatus === 'pending'">Queued, 114514 requests
-                                                        ahead
-                                                    </p>
-                                                    <p class="text-h6 text-center pa-2 text-medium-emphasis"
-                                                        v-show="renderStatus === 'rendering'">Rendering
-                                                    </p>
-                                                </div>
-                                            </v-fade-transition>
-                                            <v-fade-transition>
-                                                <div v-show="renderStatus === 'error'">
-                                                    TODO: impl
-                                                    error
-                                                </div>
-                                            </v-fade-transition>
+                                            <div v-show="renderStatus === 'idle'">
+                                                <p class="text-h2 text-center">&#128558;</p>
+                                                <p class="text-h6 text-center pa-2">You don't have any render
+                                                    requests
+                                                    now.
+                                                </p>
+                                                <p class="text-body-1 text-center text-medium-emphasis pa-2">
+                                                    Start by entering your prompt above and click Generate.</p>
+                                            </div>
+                                            <div v-show="isGenerateDisabled">
+                                                <v-row>
+                                                    <v-spacer></v-spacer>
+                                                    <v-col>
+                                                        <!-- TODO: center this -->
+                                                        <v-progress-circular
+                                                            :indeterminate="renderStatus !== 'rendering'" :size="64"
+                                                            color="secondary" :model-value="renderProgress">
+                                                        </v-progress-circular>
+                                                    </v-col>
+                                                    <v-spacer></v-spacer>
+                                                </v-row>
+                                                <v-row>
+                                                    <v-col>
+                                                        <p class="text-h6 text-center pa-2 text-medium-emphasis"
+                                                            v-show="renderStatus === 'reqsent'">Request sent, awaiting
+                                                            respond
+                                                        </p>
+                                                        <p class="text-h6 text-center pa-2 text-medium-emphasis"
+                                                            v-show="renderStatus === 'pending'">Queued, 114514 requests
+                                                            ahead
+                                                        </p>
+                                                        <p class="text-h6 text-center pa-2 text-medium-emphasis"
+                                                            v-show="renderStatus === 'rendering'">Rendering
+                                                        </p>
+                                                    </v-col>
+                                                </v-row>
+                                            </div>
+                                            <div v-show="renderStatus === 'error'">
+                                                TODO: impl
+                                                error
+                                            </div>
                                             <!-- TODO: add a image loading screen -->
                                         </v-overlay>
                                     </div>

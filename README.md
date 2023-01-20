@@ -4,7 +4,7 @@
     <br>
 <p>
 
-### WARN: Under heavy development, please do not use in production environments.
+### WARN: Under heavy development, please do not use in production environments
 
 A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) but with a modern design _and much LESS options because I am a noob and I don't know what does they do.
 
@@ -18,17 +18,13 @@ A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.c
 
 Refer to [the wiki](https://github.com/GrieferPig/PonAImager-WebUI/wiki/) for installation guide & more
 
-Demo (Under maintenance): [available here](https://ponaimager.top/), 503 = server fked up, __*plz do not ddos ty*__
+Demo (Under maintenance): [available here](https://ponaimager.top/)
 
 Model used in demo: [AstraliteHeart/pony-diffusion](https://huggingface.co/AstraliteHeart/pony-diffusion)
 
 国人建议使用[china.ponaimager.top](http://china.ponaimager.top)以获得最佳速度
 
 # License info
-
-TODO: copy to wiki
-
-(Adapted from [pony-diffusion](https://huggingface.co/AstraliteHeart/pony-diffusion))
 
 ## License
 
@@ -45,5 +41,7 @@ This model can be used for entertainment purposes and as a generative art assist
 ## Disclaimer
 
 Font used: A New Adventure, Hasbro Inc, Adapted by EveryDayDashie
+
 Icon: Adapted from derpibooru.org
+
 I own absolutely nothing here except for the source code of this website. You may contact me for a take down request if you are the respective content owner.
