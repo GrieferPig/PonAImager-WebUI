@@ -18,25 +18,23 @@ A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.c
 
 Refer to [the wiki](https://github.com/GrieferPig/PonAImager-WebUI/wiki/) for installation guide & more
 
-Demo (Under maintenance): [available here](https://ponaimager.top/)
+Demo: [available here](http://ec2-18-163-49-150.ap-east-1.compute.amazonaws.com:8080/) (Warning: render speed is ridiculously slow, took 2 days for 512x512, 50 steps)
 
 Model used in demo: [AstraliteHeart/pony-diffusion](https://huggingface.co/AstraliteHeart/pony-diffusion)
-
-国人建议使用[china.ponaimager.top](http://china.ponaimager.top)以获得最佳速度
 
 # License info
 
 ## License
 
-This model is open access and available to all, with a CreativeML OpenRAIL-M license further specifying rights and usage. The CreativeML OpenRAIL License specifies:
+This program is open access and available to all, with a CreativeML OpenRAIL-M license further specifying rights and usage. The CreativeML OpenRAIL License specifies:
 
-- You can't use the model to deliberately produce nor share illegal or harmful outputs or content
+- You can't use the program to deliberately produce nor share illegal or harmful outputs or content
 - The authors claims no rights on the outputs you generate, you are free to use them and are accountable for their use which must not go against the provisions set in the license
-- You may re-distribute the weights and use the model commercially and/or as a service. If you do, please be aware you have to include the same use restrictions as the ones in the license and share a copy of the CreativeML OpenRAIL-M to all your users (please read the license entirely and carefully) [Please read the full license here](https://huggingface.co/spaces/CompVis/stable-diffusion-license)
+- You may re-distribute the weights and use the program commercially and/or as a service. If you do, please be aware you have to include the same use restrictions as the ones in the license and share a copy of the CreativeML OpenRAIL-M to all your users (please read the license entirely and carefully) [Please read the full license here](https://huggingface.co/spaces/CompVis/stable-diffusion-license)
 
 ## Downstream Uses
 
-This model can be used for entertainment purposes and as a generative art assistant.
+This program can be used for entertainment purposes and as a generative art assistant.
 
 ## Disclaimer
 

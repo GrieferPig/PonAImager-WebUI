@@ -96,7 +96,7 @@ cd frontend
 npm i
 ```
 
-If you're using GPU acceleration or you want to enable some optimizations (they're off by default), refer to [Configure](configure) section to see all available options for configuration.
+If you're using GPU acceleration or you want to enable some optimizations (they're off by default), refer to [Configure](Configure) section to see all available options for configuration.
 
 Aaaaaaand done! Now you should be able to draw AI pics but hold on a second...
 
@@ -131,7 +131,7 @@ Here's another example running a local model under the folder "good-model" runni
 python pytorch.py --modelId "good-model" hi mom
 ```
 
-For more information about the arguments, see [CLI Interface](cli_interface).
+For more information about the arguments, see [CLI Interface](CLI-Interface).
 
 ## Launching the server
 

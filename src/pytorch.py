@@ -51,7 +51,7 @@ parser.add_argument("--disableChecker",
 parser.add_argument('prompt', type=str, nargs='*',
                     help='Prompts to generate image, 77 token(word) limit')
 parser.add_argument('--negative', type=str, nargs='*', default="",
-                    help='Negative prompt: Will not be considered by AI while generating img, 77 token(word) limit')
+                    help='Negative prompt: Will less likely to be considered by AI while generating image, 77 token(word) limit')
 
 renderParser = argparse.ArgumentParser()
 renderParser.add_argument("--scale", type=float,

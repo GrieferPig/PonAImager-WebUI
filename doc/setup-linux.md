@@ -31,7 +31,7 @@ If your card does not meet these requirements, CPU inference is your only choice
 
 ### Software
 
-- If you're using GPU acceleation, it is suggested that you install the latest GPU driver to prevent bizarre compactibility issues and have the maximum performance. For driver installation, google it, it's easy. (actually not on Linux since finding an appropriate driver with the correct kernel can be a headache, that's why I recommend Windows if you want to use GPU acceleration)
+- If you're using GPU acceleation, it is suggested that you install the latest GPU driver to prevent bizarre compactibility issues and have the maximum performance. For driver installation, google it, it's easy. (actually not on Linux since finding an appropriate driver for the correct kernel can be a headache, that's why I recommend Windows if you want to use GPU acceleration)
 - You also need a Linux distributions that use glibc >= v2.17. Run `ldd --version` to see the version you're running.
 
 > Fun fact: If your distro is newer than 2015 then 99% it is good. For example, you can even run this on Ubuntu 13.04 (and ofc nobody will)
@@ -99,7 +99,7 @@ cd frontend
 npm i
 ```
 
-If you're using GPU acceleration or you want to enable some optimizations (they're off by default), refer to [Configure](configure) section to see all available options for configuration.
+If you're using GPU acceleration or you want to enable some optimizations (they're off by default), refer to [Configure](Configure) section to see all available options for configuration.
 
 Aaaaaaand done! Now you should be able to draw AI pics but hold on a second...
 
@@ -134,7 +134,7 @@ Here's another example running a local model under the folder "good-model" runni
 python3 pytorch.py --modelId "good-model" hi mom
 ```
 
-For more information about the arguments, see [CLI Interface](cli_interface).
+For more information about the arguments, see [CLI Interface](CLI-Interface).
 
 ## A smol fix
 
@@ -144,7 +144,7 @@ Since Linux does not allow non-root processes to listen to port 80, we need to u
 sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 8080
 ```
 
-and modify the value of "http-port" in your config.json to 8080 [see here for details about config.json](configure).
+and modify the value of "http-port" in your config.json to 8080 [see here for details about config.json](Configure).
 
 ## Launching the server
 
