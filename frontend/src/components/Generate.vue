@@ -148,6 +148,11 @@
                                                             Queued, {{ pendingReqNum }} requests
                                                             ahead
                                                         </p>
+                                                        <p class="text-caption text-center pa-2 text-medium-emphasis"
+                                                            v-if="renderStatus === 'pending'" :key="overlayRefreshKey">
+                                                            TIPS: You may come back later if there's lots of request
+                                                            pending
+                                                        </p>
                                                         <p class="text-h6 text-center pa-2 text-medium-emphasis"
                                                             v-if="renderStatus === 'rendering'">Rendering
                                                         </p>
