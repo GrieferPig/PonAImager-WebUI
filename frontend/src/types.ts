@@ -23,7 +23,7 @@ interface RenderStat {
     reqTime: number,
     finishTime: number,
     origReq: RenderReq,
-    reqNoProcessingNow: number,
+    reqNo: number,
 }
 
 interface ReqRespond {
@@ -50,6 +50,7 @@ type RenderStatus = ("idle" | "reqsent" | "pending" | "rendering" | "done" | "er
 interface ServerStatus {
     pendingRequests: number,
     doneRequests: number,
+    totalRequests: number,
     averageIterSpeed: number,
 }
 

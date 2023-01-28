@@ -17,6 +17,7 @@ export async function getDefaults() {
     const scale = render.defaults.scale;
     const MAX_TOKEN_LENGTH = render.maximum['token-length'];
 
+    const RANDOM_PROMPT_LIST = render["random-prompt-list"];
 
     const steplabels: string[] = [];
     steplabels.length = MAX_STEPS - MIN_STEPS;
@@ -46,5 +47,6 @@ export async function getDefaults() {
         watermarkForce: render.watermark.force,
         stepsTickLabel: steplabels,
         scaleTickLabel: scalelabels,
+        RANDOM_PROMPT_LIST: RANDOM_PROMPT_LIST,
     }
 }

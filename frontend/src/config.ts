@@ -36,6 +36,7 @@ export interface Render {
     revision: string
     "download-proxy": string
     "disable-nsfw-checker": boolean
+    "random-prompt-list": string[] // TODO: add doc
 }
 
 export interface Optimizations {

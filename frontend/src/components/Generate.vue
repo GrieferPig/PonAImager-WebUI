@@ -57,7 +57,8 @@
                                                 </v-row>
                                                 <v-row>
                                                     <v-col cols="12" md="6">
-                                                        <v-card title="Steps" variant="flat" subtitle="TODO: new sub">
+                                                        <v-card title="Steps" variant="flat"
+                                                            subtitle="How many iterations does the image go over">
                                                             <v-card-text>
                                                                 <v-slider v-model="steps" :ticks="stepsTickLabel"
                                                                     :min="MIN_STEPS" :max="MAX_STEPS" :step="1"
@@ -66,7 +67,8 @@
                                                         </v-card>
                                                     </v-col>
                                                     <v-col cols="12" md="6">
-                                                        <v-card title="Scale" variant="flat" subtitle="TODO: new sub">
+                                                        <v-card title="Scale" variant="flat"
+                                                            subtitle="How heavily your prompt affect the image">
                                                             <v-card-text>
                                                                 <v-slider v-model="scale" :ticks="scaleTickLabel"
                                                                     :min="MIN_SCALE" :max="MAX_SCALE" :step="0.5"
@@ -116,8 +118,9 @@
                         <v-row>
                             <v-col>
                                 <v-card variant="flat" id="renderImage">
-                                    <v-img aspect-ratio="1" :src="imageSrc"></v-img>
-                                    <div v-show="renderStatus !== 'done'">
+                                    <v-img aspect-ratio="1" :src="imageSrc" v-on:loadstart="isImageLoading = true"
+                                        v-on:load="isImageLoading = false" v-on:error="imageLoadFailed()"></v-img>
+                                    <div v-if="showOverlay">
                                         <v-overlay v-model="imageOverlay" contained class="align-center justify-center">
                                             <div v-show="renderStatus === 'idle'">
                                                 <p class="text-h2 text-center">&#128558;</p>
@@ -129,38 +132,40 @@
                                                     Start by entering your prompt above and click Generate.</p>
                                             </div>
                                             <div v-show="isGenerateDisabled">
-                                                <v-row>
-                                                    <v-spacer></v-spacer>
-                                                    <v-col>
-                                                        <!-- TODO: center this -->
-                                                        <v-progress-circular
-                                                            :indeterminate="renderStatus !== 'rendering'" :size="64"
-                                                            color="secondary" :model-value="renderProgress">
-                                                        </v-progress-circular>
-                                                    </v-col>
-                                                    <v-spacer></v-spacer>
-                                                </v-row>
+                                                <p class="text-center">
+                                                    <v-progress-circular :indeterminate="renderStatus !== 'rendering'"
+                                                        :size="64" color="secondary" :model-value="renderProgress">
+                                                    </v-progress-circular>
+                                                </p>
                                                 <v-row>
                                                     <v-col>
                                                         <p class="text-h6 text-center pa-2 text-medium-emphasis"
-                                                            v-show="renderStatus === 'reqsent'">Request sent, awaiting
+                                                            v-if="renderStatus === 'reqsent'">Request sent, awaiting
                                                             respond
                                                         </p>
                                                         <p class="text-h6 text-center pa-2 text-medium-emphasis"
-                                                            v-show="renderStatus === 'pending'">Queued, 114514 requests
+                                                            v-if="renderStatus === 'pending'" :key="overlayRefreshKey">
+                                                            Queued, {{ pendingReqNum }} requests
                                                             ahead
                                                         </p>
                                                         <p class="text-h6 text-center pa-2 text-medium-emphasis"
-                                                            v-show="renderStatus === 'rendering'">Rendering
+                                                            v-if="renderStatus === 'rendering'">Rendering
                                                         </p>
                                                     </v-col>
                                                 </v-row>
                                             </div>
                                             <div v-show="renderStatus === 'error'">
-                                                TODO: impl
-                                                error
+                                                <p class="text-h2 text-center">&#128561;</p>
+                                                <p class="text-h6 text-center pa-2">Oh no!
+                                                </p>
+                                                <p class="text-body-1 text-center text-medium-emphasis pa-2">
+                                                    Something bad happened. Please try again.</p>
                                             </div>
-                                            <!-- TODO: add a image loading screen -->
+                                            <div v-show="isImageLoading">
+                                                <p class="text-h2 text-center">&#9749;</p>
+                                                <p class="text-h6 text-center pa-2">Loading image
+                                                </p>
+                                            </div>
                                         </v-overlay>
                                     </div>
                                 </v-card>
@@ -191,10 +196,14 @@
                     </v-container>
                 </v-sheet>
             </v-col>
-
             <v-col cols="12" lg="4" xl="3">
-                <v-sheet rounded="lg" min-height="512" elevation="8">
-                    serverstat+history
+                <v-sheet rounded="lg" min-height="512" elevation="8" :key="overlayRefreshKey">
+                    Pending tasks {{ serverStatus.pendingRequests }} <br>
+                    Total tasks {{ serverStatus.totalRequests }} <br>
+                    Rendered tasks {{ serverStatus.doneRequests }} <br>
+                    Average iteration speed {{ serverStatus.averageIterSpeed }}
+                    <br>
+                    TODO: add history
                 </v-sheet>
             </v-col>
             <v-spacer></v-spacer>
@@ -214,7 +223,7 @@
 </template>
 
 <script lang="ts">
-import { RenderReq, QueryRes, RenderStatus, ReqRespond } from '@/types'
+import { RenderReq, QueryRes, RenderStatus, ReqRespond, ServerStatus } from '@/types'
 import { requestInfo, requestRender, serverStatus } from '@/scripts/request'
 import { AxiosError } from 'axios'
 import { VForm } from '../../node_modules/vuetify/lib/components'
@@ -295,7 +304,8 @@ export default {
             }
         ];
         try {
-            console.log(await serverStatus());
+            this.serverStatus = await serverStatus();
+            this.pollServerStatus();
             this.$store.commit("purgeHistory");
             console.log(this.$store.state.history);
             if (this.renderStatus !== "idle") {
@@ -307,7 +317,7 @@ export default {
                 } else {
                     let _res = await requestInfo(this.$store.state.renderUUID);
                     if (_res.status === "yay") {
-                        // still active, resume process
+                        // still active, resume polling process
                         await this.poll(this.$store.state.renderUUID);
                     } else {
                         // dead (expired maybe)
@@ -348,6 +358,7 @@ export default {
                 watermarkForce: false,
                 stepsTickLabel: [],
                 scaleTickLabel: [],
+                RANDOM_PROMPT_LIST: [],
             }
         }
     },
@@ -370,6 +381,8 @@ export default {
             imageRating: 0,
             imageExpireIn: "30:00",
             imageExpireTimestamp: 0,
+            isImageLoading: false,
+            reqNo: 0,
 
             prompt: "",
             negPrompt: "",
@@ -382,6 +395,10 @@ export default {
             dimenRulesHeight: [(v) => { }] as [(v: string) => boolean | string],
             dimenRulesWidth: [(v) => { }] as [(v: string) => boolean | string],
             seedRules: [(v) => { }] as [(v: string) => boolean | string],
+
+            serverStatus: {} as ServerStatus,
+
+            overlayRefreshKey: 0,
         }
     },
     computed: {
@@ -393,6 +410,15 @@ export default {
         },
         isGenerateDisabled() {
             return (this.renderStatus === 'rendering') || (this.renderStatus === 'reqsent') || (this.renderStatus === 'pending')
+        },
+        showOverlay() {
+            if (this.renderStatus === 'done') {
+                return this.isImageLoading;
+            }
+            return true;
+        },
+        pendingReqNum() {
+            return this.reqNo - this.serverStatus.doneRequests - 1;
         }
     },
     watch: {
@@ -439,6 +465,7 @@ export default {
             console.log(_res)
             switch (_res.status) {
                 case "yay":
+                    this.reqNo = _res.reqNo;
                     this.$store.commit("setRendering", "pending");
                     this.$store.commit("setRenderUUID", _res.detail)
                     await this.poll(_res.detail);
@@ -462,8 +489,9 @@ export default {
                     case "yay":
                         switch (_res.renderStat?.status) {
                             case "Pending":
+                                this.reqNo = _res.renderStat.reqNo;
                                 this.$store.commit("setRendering", "pending");
-                                console.log("pending");
+                                console.log("pending" + _res.renderStat.reqNo);
                                 break;
                             case "Finished":
                                 this.$store.commit("setRendering", "done");
@@ -505,6 +533,18 @@ export default {
                 await _poll();
             }, 1000)
         },
+        async pollServerStatus() {
+            const _poll = async () => {
+                this.serverStatus = await serverStatus();
+                this.overlayRefreshKey++;
+                setTimeout(async () => {
+                    await _poll();
+                }, 5000);
+            };
+            setTimeout(async () => {
+                await _poll();
+            }, 5000);
+        },
         purgeHistory() {
             // purge history every 10 sec
             this.$store.commit("purgeHistory");
@@ -539,7 +579,9 @@ export default {
             this.dialog = true;
         },
         fillPrompt() {
-            this.prompt = "TODO: impl prompt example filling";
+            this.prompt = this.RANDOM_PROMPT_LIST[
+                Math.floor(Math.random() * this.RANDOM_PROMPT_LIST.length)
+            ];
         },
         resetAdvanced() {
             // leave neg prompt alone
@@ -549,6 +591,12 @@ export default {
             this.steps = this.DEF_STEPS;
             this.seed = "-1";
             this.watermark = this.DEF_WATERMARK;
+        },
+        imageLoadFailed() {
+            this.errorPopup("Failed to load image. Reload and check your history.")
+        },
+        async getServerStatus() {
+            this.serverStatus = await serverStatus();
         },
     },
     props: ['pageLoading'],

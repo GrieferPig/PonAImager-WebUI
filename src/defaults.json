@@ -51,6 +51,7 @@
         "model-id": "AstraliteHeart/pony-diffusion",
         "revision": "main",
         "download-proxy": "",
-        "disable-nsfw-checker": true
+        "disable-nsfw-checker": true,
+        "random-prompt-list": ["Specify an example prompt list in config"]
     }
 }

@@ -135,6 +135,7 @@ let taskList = new Map<String, RenderStat>();
 let pendingUUID: String[] = [];
 let renderingUUID = "";
 let taskCounter = 0
+let renderedTaskCounter = 0;
 
 daemon.stdout.on('data', (data: Buffer) => {
     if (data.toString() === "ready" + os.EOL) {
@@ -234,7 +235,8 @@ app.get('/serverInfo', (req, res) => {
 app.get('/serverStatus', (req, res) => {
     res.send({
         pendingRequests: pendingUUID.length,
-        doneRequests: taskCounter,
+        doneRequests: renderedTaskCounter,
+        totalRequests: taskCounter,
         averageIterSpeed: 0 // TODO:impl
     } as ServerStatus);
 });
@@ -257,19 +259,21 @@ function addTask(req: RenderReq): string {
         reqTime: new Date().getTime(),
         finishTime: 0,
         origReq: req,
+        reqNo: taskCounter + 1,
     } as RenderStat);
     pendingUUID.push(_uuid)
+    taskCounter++;
     startNextTask();
     return _uuid;
 }
 
 function startNextTask() {
-    if (pendingUUID.length !== 0) {
+    if (daemonInit && pendingUUID.length !== 0) {
         if (renderingUUID === "") {
             renderingUUID = pendingUUID.shift() as string;
             let _task: RenderStat = taskList.get(renderingUUID) as RenderStat;
             let _args: string = concatArg(_task);
-            log.info(`Launching task ${taskCounter + 1}: ${renderingUUID} with args ${_args}`)
+            log.info(`Launching task ${_task.reqNo}: ${renderingUUID} with args ${_args}`)
             daemon.stdin.write(_args)
         }
     }
@@ -292,8 +296,7 @@ function finishTask() {
         });
     }, EXPIRETIME)
     renderingUUID = "";
-
-    taskCounter++;
+    renderedTaskCounter++;
 }
 
 function updateRenderingTask(proc_output: Buffer) {

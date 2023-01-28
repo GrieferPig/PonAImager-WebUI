@@ -52,6 +52,7 @@
         "model-id": "AstraliteHeart/pony-diffusion",
         "revision": "main",
         "download-proxy": "",
-        "disable-nsfw-checker": true
+        "disable-nsfw-checker": true,
+        "random-prompt-list": ["test1", "test2", "test3"]
     }
 }
