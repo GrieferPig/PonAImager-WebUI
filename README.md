@@ -18,7 +18,7 @@ A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.c
 
 Refer to [the wiki](https://github.com/GrieferPig/PonAImager-WebUI/wiki/) for installation guide & more
 
-Demo: [available here](http://ec2-18-163-49-150.ap-east-1.compute.amazonaws.com:8080/) (Warning: render speed is ridiculously slow, took 2 days for 512x512, 50 steps)
+Demo: [available here](http://ponaimager.top/)
 
 Model used in demo: [AstraliteHeart/pony-diffusion](https://huggingface.co/AstraliteHeart/pony-diffusion)
 
