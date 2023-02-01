@@ -127,6 +127,14 @@ if args.disableChecker:
 
 pipe = pipe.to(device)
 
+try:
+    if device == "cpu":
+        import intel_extension_for_pytorch as ipex
+        println("Intel ext detected, enabling optim")
+        ipex.optimize(pipe, dtype=torch.bfloat16)
+except:
+    pass
+
 # pipp-sized gpu mem optim
 # disable if ur mem is average height (8GiB+)
 # no acturally use this if u have xformers installed
