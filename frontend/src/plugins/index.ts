@@ -17,7 +17,7 @@ import { faSun, faMoon, faDice, faExclamation, faTimesCircle, faChevronUp, faChe
 import { faStar as faStarRegular, faSquare } from '@fortawesome/free-regular-svg-icons'
 
 export function registerPlugins(app: App) {
-  // loadFonts()
+  loadFonts()
   app.use(vuetify);
   app.use(loadVuex());
 

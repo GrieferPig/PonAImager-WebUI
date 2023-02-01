@@ -133,8 +133,6 @@ export default {
 </script>
 
 <style>
-@import '..\node_modules\roboto-fontface\css\roboto\roboto-fontface.css';
-
 v-main {
     background-color: rgb(var(--v-theme-background));
 }

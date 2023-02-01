@@ -1,6 +1,6 @@
 # Configure
 
-The configuration file is albeit optional, but recommended to create before the program's first run. Using a custom configuration file may increase efficiency and uses the full potential of your hardware.
+The configuration file is albeit optional, but recommended to create before the program's first run. Using a custom configuration file may also increase efficiency and uses the full potential of your hardware.
 
 To create a configuration file, simply duplicate the example.json and rename it to config.json. The values in example.json are default values taken by the program, you may edit them to fit your setup and needs. You may also remove entries in this config to be replaced by defaults once the config is loaded.
 
@@ -239,3 +239,9 @@ HTTP(S) proxy to use while downloading model
 Disable NSFW checker
 
 > Boolean, default: true
+
+#### random-prompt-list
+
+A string array of prompts to be randomly filled into the prompt textfield when the user clicked the dice button
+
+> String array, default: ["Specify an example prompt list in config"]
