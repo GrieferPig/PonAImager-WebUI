@@ -125,8 +125,6 @@ if args.disableChecker:
     # I would be genuinely suprised if they followed this rule which is stated in the eula
     println("Disabled safety checker. Please ensure you use this feature to only generate appropriate images.")
 
-pipe = pipe.to(device)
-
 try:
     if device == "cpu":
         import intel_extension_for_pytorch as ipex
@@ -134,6 +132,8 @@ try:
         ipex.optimize(pipe, dtype=torch.bfloat16)
 except:
     pass
+
+pipe = pipe.to(device)
 
 # pipp-sized gpu mem optim
 # disable if ur mem is average height (8GiB+)
