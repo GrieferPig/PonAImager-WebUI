@@ -226,6 +226,26 @@ app.post('/query', (req, res) => {
     }
 });
 
+app.post('/rating', (req, res) => {
+    let _rating = parseInt(req.body.rating)
+    if (_rating > 5 && _rating < 1) {
+        res.send("Out of range")
+        return;
+    }
+    console.log(req.body)
+    updateRating(_rating);
+    res.send("")
+})
+
+let rating = 0;
+let ratingCount = 0;
+
+function updateRating(newRating: number) {
+    rating = parseFloat((((rating * ratingCount) + newRating) / (ratingCount + 1)).toFixed(2))
+    ratingCount++;
+    log.info(`New Rating: ${rating} @ No. ${ratingCount}`)
+}
+
 // one-time fetch for clients, consts
 app.get('/serverInfo', (req, res) => {
     res.send(conf.render as ServerInfo);

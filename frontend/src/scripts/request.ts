@@ -32,6 +32,10 @@ async function requestRender(req: RenderReq): Promise<ReqRespond> {
     })).data;
 }
 
+async function requestRating(rating: number) {
+    return await AXIOS.post("/rating", { rating: rating }, { timeout: TIMEOUT })
+}
+
 async function serverInfo(): Promise<Render> {
     return (await AXIOS.get("/serverInfo", { timeout: TIMEOUT })).data as Render;
 }
@@ -45,4 +49,5 @@ export {
     requestRender,
     serverInfo,
     serverStatus,
+    requestRating,
 }

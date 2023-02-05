@@ -179,15 +179,21 @@
                         <v-row v-if="showRateAndDownload">
                             <v-spacer></v-spacer>
                             <v-col cols="12" sm="4">
-                                <p class="text-center text-subtitle-1 h-100 w-100 mb-n4">
-                                    Rate the quality of this image (TODO: implement)
-                                </p>
+                                <div class="d-flex align-center flex-column justify-center h-100 w-100">
+                                    <p class="text-center text-subtitle-1 h-100 w-100">
+                                        Rate the quality of this image
+                                    </p>
+                                    <p class="text-center text-subtitle-2 h-100 w-100" v-if="isRatingSent">
+                                        Thank you for the feedback!
+                                    </p>
+                                </div>
                             </v-col>
                             <v-col cols="12" sm="4">
                                 <div class="text-center">
                                     <v-rating v-model="imageRating" hover color="secondary"
                                         :item-labels="['neigh', '', '', '', 'yay']" item-label-position="top"
-                                        density="comfortable" disabled></v-rating>
+                                        density="comfortable" :disabled="isRatingSent"
+                                        :readonly="isRatingSent"></v-rating>
                                 </div>
                             </v-col>
                             <v-col cols="12" sm="4">
@@ -229,7 +235,7 @@
 
 <script lang="ts">
 import { RenderReq, QueryRes, RenderStatus, ReqRespond, ServerStatus } from '@/types'
-import { requestInfo, requestRender, serverStatus } from '@/scripts/request'
+import { requestInfo, requestRender, serverStatus, requestRating } from '@/scripts/request'
 import { AxiosError } from 'axios'
 import { VForm } from '../../node_modules/vuetify/lib/components'
 import { getDefaults } from '@/scripts/getDefaults'
@@ -404,6 +410,8 @@ export default {
             serverStatus: {} as ServerStatus,
 
             overlayRefreshKey: 0,
+
+            isRatingSent: false,
         }
     },
     computed: {
@@ -437,6 +445,9 @@ export default {
                 // for some reason empty input = null
                 this.negPrompt = "";
             }
+        },
+        imageRating(_newV) {
+            this.sendRating()
         }
     },
     methods: {
@@ -445,6 +456,8 @@ export default {
             if (!valid) {
                 return;
             }
+            this.isRatingSent = false;
+            this.imageRating = 0;
             this.$store.commit("setRendering", "reqsent");
             this.showRateAndDownload = false;
             this.imageSrc = "";
@@ -603,6 +616,10 @@ export default {
         async getServerStatus() {
             this.serverStatus = await serverStatus();
         },
+        async sendRating() {
+            await requestRating(this.imageRating)
+            this.isRatingSent = true;
+        }
     },
     props: ['pageLoading'],
     emits: ['update:pageLoading'],
