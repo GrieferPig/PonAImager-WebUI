@@ -1,7 +1,5 @@
 // surprisingly this code works on first try gj to me
 
-// TODO: add shuffle example prompts function
-
 // custom types
 import {
     RenderReq,
@@ -67,7 +65,6 @@ const STRICT = conf.web.https.strict;
 const EXPIRETIME = conf.render['image-expire-time'] * 1000 * 60;
 
 // maxs and mins
-// TODO: add server side req check
 const MAX_STEPS = conf.render.maximum.steps;
 const MIN_STEPS = conf.render.minimum.steps;
 const MAX_HEIGHT = conf.render.maximum.height;
@@ -258,7 +255,7 @@ app.get('/serverStatus', (req, res) => {
         pendingRequests: pendingUUID.length,
         doneRequests: renderedTaskCounter,
         totalRequests: taskCounter,
-        averageIterSpeed: 0 // TODO:impl
+        averageIterSpeed: averageIterSpeed
     } as ServerStatus);
 });
 
@@ -288,7 +285,11 @@ function addTask(req: RenderReq): string {
     return _uuid;
 }
 
+let timeElapsed = 0;
+let averageIterSpeed = 0;
+
 function startNextTask() {
+    timeElapsed = Date.now();
     if (daemonInit && pendingUUID.length !== 0) {
         if (renderingUUID === "") {
             renderingUUID = pendingUUID.shift() as string;
@@ -302,6 +303,17 @@ function startNextTask() {
 
 function finishTask() {
     let _task: RenderStat = taskList.get(renderingUUID) as RenderStat;
+
+    // calc time elapsed
+    timeElapsed = Date.now() - timeElapsed;
+    // convert from ms to s
+    timeElapsed = timeElapsed / 1000;
+
+    let _averageIterSpeed = timeElapsed / _task.currentIter
+    averageIterSpeed = ((averageIterSpeed * renderedTaskCounter) + _averageIterSpeed) / (renderedTaskCounter + 1)
+    // clip to 2 sig digit
+    averageIterSpeed = parseFloat(averageIterSpeed.toFixed(2))
+
     let _finishTime = new Date().getTime();
     _task.status = "Finished";
     _task.finishTime = _finishTime;
@@ -325,7 +337,6 @@ function updateRenderingTask(proc_output: Buffer) {
     _task.currentIter++;
     _task.status = "Rendering";
     let _output = proc_output.toString();
-    // TODO: impl iter speed & esti time
     taskList.set(renderingUUID, _task);
 }
 
@@ -370,6 +381,9 @@ function checkReq(req: RenderReq): string {
     }
     if ((req.width % 32 !== 0) && (req.height % 32 !== 0)) {
         return "Height/Width is not multiplies of 32"
+    }
+    if ((req.seed > 0xffff_ffff_ffff_f) || (req.seed < -0xffff_ffff_ffff_f)) {
+        return "Seed out of range"
     }
     return "";
 }

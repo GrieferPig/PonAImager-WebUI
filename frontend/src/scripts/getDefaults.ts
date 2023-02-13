@@ -29,6 +29,8 @@ export async function getDefaults() {
     scalelabels[0] = MIN_SCALE + "";
     scalelabels[scalelabels.length - 1] = MAX_SCALE + ""
 
+    const modelId = render["model-id"];
+
     return {
         MAX_STEPS: MAX_STEPS,
         MIN_STEPS: MIN_STEPS,
@@ -48,5 +50,6 @@ export async function getDefaults() {
         stepsTickLabel: steplabels,
         scaleTickLabel: scalelabels,
         RANDOM_PROMPT_LIST: RANDOM_PROMPT_LIST,
+        MODEL_ID: modelId,
     }
 }

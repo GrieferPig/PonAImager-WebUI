@@ -213,9 +213,11 @@
                     Pending tasks {{ serverStatus.pendingRequests }} <br>
                     Total tasks {{ serverStatus.totalRequests }} <br>
                     Rendered tasks {{ serverStatus.doneRequests }} <br>
-                    Average iteration speed {{ serverStatus.averageIterSpeed }}
+                    Average iteration speed {{ serverStatus.averageIterSpeed }} s/it
                     <br>
-                    TODO: add history
+                    Running model {{ MODEL_ID }}
+                    <br>
+                    TODO: impl history ui
                 </v-sheet>
             </v-col>
             <v-spacer></v-spacer>
@@ -312,6 +314,9 @@ export default {
                 if (!(/^(-?)\d+$/.test(v))) {
                     return "Not a number"
                 }
+                if ((parseInt(v) > 0xffff_ffff_ffff_f) || (parseInt(v) < -0xffff_ffff_ffff_f)) {
+                    return "Seed out of range"
+                }
                 return true;
             }
         ];
@@ -371,6 +376,7 @@ export default {
                 stepsTickLabel: [],
                 scaleTickLabel: [],
                 RANDOM_PROMPT_LIST: [],
+                MODEL_ID: ""
             }
         }
     },
