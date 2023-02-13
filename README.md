@@ -8,6 +8,10 @@
 
 A web UI for Stable Diffusion similiar to [stable-diffusion-ui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) but with a modern design _and much LESS options because I am a noob and I don't know what does they do.
 
+### Setup
+
+Go to [wiki](https://github.com/GrieferPig/PonAImager-WebUI/wiki) for instructions on how to setup and config
+
 ### Features
 
 - Modern material design, robust user interface, fine-tuned website for fast loading speed (400KiB~ data transmitted without cache on loading)
