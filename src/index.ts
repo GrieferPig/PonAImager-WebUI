@@ -334,7 +334,7 @@ function concatArg(req: RenderStat): string {
     if (req.origReq.watermark) {
         _arg += `--watermark ${conf.render.watermark.text} `
     }
-    if (!req.origReq.negPrompt) {
+    if (req.origReq.negPrompt !== "") {
         _arg += `--negative ${req.origReq.negPrompt} `
     }
     _arg += os.EOL;
