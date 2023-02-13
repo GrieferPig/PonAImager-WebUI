@@ -89,7 +89,8 @@
                                                         </v-card>
                                                     </v-col>
                                                     <v-col cols="12" md="6">
-                                                        <v-card title="Watermark" variant="flat" subtitle="TODO: impl">
+                                                        <v-card title="Watermark" variant="flat"
+                                                            subtitle="Add a watermark on the image">
                                                             <v-card-text>
                                                                 <v-checkbox label="Watermark" v-model="watermark"
                                                                     :disabled="watermarkForce"

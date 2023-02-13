@@ -28,6 +28,7 @@ const helmet = require('helmet');
 
 import * as DEFAULT_CONFIG from './defaults.json'
 import { merger } from './merger'
+import { createRequire } from 'module'
 
 // define paths
 const ROOT_PATH = path.join(__dirname, "..", "..");
@@ -329,7 +330,13 @@ function updateRenderingTask(proc_output: Buffer) {
 }
 
 function concatArg(req: RenderStat): string {
-    let _arg = `--scale ${req.origReq.scale} --steps ${req.origReq.steps} --height ${req.origReq.height} --width ${req.origReq.width} --seed ${req.origReq.seed} --outname ${req.uuid} ${req.origReq.prompt} --negative ${req.origReq.negPrompt}`;
+    let _arg = `--scale ${req.origReq.scale} --steps ${req.origReq.steps} --height ${req.origReq.height} --width ${req.origReq.width} --seed ${req.origReq.seed} --outname ${req.uuid} ${req.origReq.prompt} `;
+    if (req.origReq.watermark) {
+        _arg += `--watermark ${conf.render.watermark.text} `
+    }
+    if (!req.origReq.negPrompt) {
+        _arg += `--negative ${req.origReq.negPrompt} `
+    }
     _arg += os.EOL;
     return _arg;
 }
