@@ -10,6 +10,9 @@ import {
 } from '@/types'
 import axios from 'axios'
 const AXIOS = axios.create();
+import axiosRetry from 'axios-retry';
+
+axiosRetry(AXIOS, { retries: 3, retryDelay: () => 1000, retryCondition: () => true });
 
 async function requestInfo(uuid: string): Promise<QueryRes> {
     const req: QueryReq = {

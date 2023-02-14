@@ -463,6 +463,7 @@ export default {
             if (!valid) {
                 return;
             }
+            this.isImageLoading = false;
             this.isRatingSent = false;
             this.imageRating = 0;
             this.$store.commit("setRendering", "reqsent");
